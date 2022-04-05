@@ -1,2 +1,3 @@
 # SpaGFT
-Detect
+## Requirments
+SpaGFT is a python package.
