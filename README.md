@@ -1,0 +1,2 @@
+# SpaGFT
+Detect
