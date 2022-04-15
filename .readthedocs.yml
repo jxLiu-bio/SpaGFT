@@ -1,22 +1,15 @@
 version: 2
 
 sphinx:
-  configuration: source/conf.py
-  builder: html
 
-build:
-  apt_packages:
-    - cmake
-    - g++
+  configuration:  source/conf.py
 
-conda:
-  environment: source/environment.yml
+formats: all
 
 python:
-  version: "3.7"
+
+  version: 3.7
+
   install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - source
-  system_packages: true
+
+    - requirements: source/requirements.txt
