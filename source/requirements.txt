@@ -1,5 +1,7 @@
--r ..requirements.txt
-ipyvolume==0.6.0a1
+sphinx>=1.4
+ipykernel
+nbsphinx>=0.4
+nbclean1
 ipywebrtc
 ipykernel
 ipywidgets
@@ -12,5 +14,4 @@ recommonmark
 sphinx==3.0.0
 sphinx-autodoc-typehints
 sphinx_gallery
-sphinx_rtd_theme>=0.3.1
-typing_extensions
+sphinx_rtd_theme>=0.
