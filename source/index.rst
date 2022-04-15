@@ -11,7 +11,7 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    :maxdepth: 1
    :hidden:
    
-   151673_HumanBrain
+   spatial/151673_HumanBrain
    About
    System Requirements
    Installation
