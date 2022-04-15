@@ -10,8 +10,7 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    :caption: Main
    :maxdepth: 1
    :hidden:
-   
-   spatial/151673_HumanBrain
+
    About
    System Requirements
    Installation
@@ -20,10 +19,9 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    Contact
    
 
-
-Toturial
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. toctree::
+   :caption: Toturial
+   :maxdepth: 1
+   :hidden:
+   spatial/151673_HumanBrain
+ 
