@@ -4,6 +4,9 @@ nbsphinx>=0.4
 nbclean4
 ipykernel
 nbsphinx>=0.4
+nbclean4
+ipykernel
+nbsphinx>=0.4
 nbclean1
 ipywebrtc
 ipykernel
