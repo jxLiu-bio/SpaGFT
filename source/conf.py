@@ -55,7 +55,7 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-	import nbclean, glob
+import nbclean, glob
 
 for filename in glob.glob('**/*.ipynb', recursive=True):
     ntbk = nbclean.NotebookCleaner(filename)
