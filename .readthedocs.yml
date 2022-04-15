@@ -18,5 +18,5 @@ python:
     - method: pip
       path: .
       extra_requirements:
-        - docs
+        - source
   system_packages: true
