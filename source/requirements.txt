@@ -1,0 +1,16 @@
+-r ../requirements.txt
+ipyvolume==0.6.0a1
+ipywebrtc
+ipykernel
+ipywidgets
+jupyter_sphinx==0.1.4
+nbclean>=0.3.2
+nbformat
+nbsphinx>=0.7.0
+pygments >= 2.4.1
+recommonmark
+sphinx==3.0.0
+sphinx-autodoc-typehints
+sphinx_gallery
+sphinx_rtd_theme>=0.3.1
+typing_extensions
