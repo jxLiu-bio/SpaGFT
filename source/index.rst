@@ -12,16 +12,15 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    :hidden:
 
    About
-   System Requirements
-   Installation
-   Release
-   References
-   Contact
    
-
 .. toctree::
    :caption: Toturial
    :maxdepth: 1
    :hidden:
    spatial/151673_HumanBrain
+
+.. toctree::
+   :caption: Example Datasets
+   :maxdepth: 1
+   :hidden:
  
