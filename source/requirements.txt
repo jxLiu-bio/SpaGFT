@@ -1,4 +1,3 @@
--r ../requirements.txt
 ipyvolume==0.6.0a1
 ipywebrtc
 ipykernel
