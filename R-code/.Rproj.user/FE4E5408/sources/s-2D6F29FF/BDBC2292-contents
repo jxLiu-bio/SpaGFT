@@ -1,0 +1,98 @@
+# ID_Visium_HumanBrain_expression.h5seurat
+setwd("e:/Data and Code/Source data/chicken heart visium/")
+library(SeuratDisk)
+# D4
+# read spatial data and creat seurat object
+Data_path <- paste0("e:/Data and Code/Source data/chicken heart visium/GSM4502482_chicken_heart_spatial_RNAseq_D4_filtered_feature_bc_matrix.h5")
+expression_df <- Read10X_h5(filename = Data_path)
+# this is seurat object
+expression_df <- CreateSeuratObject(expression_df)
+expression_df
+# save Seuratobject
+SaveH5Seurat(expression_df, filename = "D4_Visium_ChikenHeart_expression.h5seurat")
+# convert to h5ad
+Convert("D4_Visium_ChikenHeart_expression.h5seurat", dest = "h5ad")
+# "151673_humanBrain.h5ad"
+
+# save spatial x y coordinate
+spatial_info <- read.csv("e:/Data and Code/Source data/chicken heart visium/chicken_heart_spatial_RNAseq_D4_tissue_positions_list.csv",header = F)
+spatial_info <- data.frame(row.names = spatial_info$V1,
+                           x = spatial_info$V4,
+                           y = spatial_info$V3)
+# matching expression matrix and corridnate
+spatial_info <- spatial_info[colnames(expression_df),]
+spatial_info <- cbind(ID = rownames(spatial_info), spatial_info)
+write.csv(spatial_info,file = "D4_Visium_ChikenHeart_xy.csv",row.names = F,quote = F)
+
+# D7
+# read spatial data and creat seurat object
+Data_path <- paste0("e:/Data and Code/Source data/chicken heart visium/GSM4502483_chicken_heart_spatial_RNAseq_D7_filtered_feature_bc_matrix.h5")
+expression_df <- Read10X_h5(filename = Data_path)
+# this is seurat object
+expression_df <- CreateSeuratObject(expression_df)
+expression_df
+# save Seuratobject
+SaveH5Seurat(expression_df, filename = "D7_Visium_ChikenHeart_expression.h5seurat")
+# convert to h5ad
+Convert("D7_Visium_ChikenHeart_expression.h5seurat", dest = "h5ad")
+# "151673_humanBrain.h5ad"
+
+# save spatial x y coordinate
+spatial_info <- read.csv("e:/Data and Code/Source data/chicken heart visium/chicken_heart_spatial_RNAseq_D7_tissue_positions_list.csv",header = F)
+spatial_info <- data.frame(row.names = spatial_info$V1,
+                           x = spatial_info$V4,
+                           y = spatial_info$V3)
+# matching expression matrix and corridnate
+spatial_info <- spatial_info[colnames(expression_df),]
+spatial_info <- cbind(ID = rownames(spatial_info), spatial_info)
+write.csv(spatial_info,file = "D7_Visium_ChikenHeart_xy.csv",row.names = F,quote = F)
+
+
+# D10
+# read spatial data and creat seurat object
+Data_path <- paste0("e:/Data and Code/Source data/chicken heart visium/GSM4502484_chicken_heart_spatial_RNAseq_D10_filtered_feature_bc_matrix.h5")
+expression_df <- Read10X_h5(filename = Data_path)
+# this is seurat object
+expression_df <- CreateSeuratObject(expression_df)
+expression_df
+# save Seuratobject
+SaveH5Seurat(expression_df, filename = "D10_Visium_ChikenHeart_expression.h5seurat")
+# convert to h5ad
+Convert("D10_Visium_ChikenHeart_expression.h5seurat", dest = "h5ad")
+# "151673_humanBrain.h5ad"
+
+# save spatial x y coordinate
+spatial_info <- read.csv("e:/Data and Code/Source data/chicken heart visium/chicken_heart_spatial_RNAseq_D10_tissue_positions_list.csv",header = F)
+spatial_info <- data.frame(row.names = spatial_info$V1,
+                           x = spatial_info$V4,
+                           y = spatial_info$V3)
+# matching expression matrix and corridnate
+spatial_info <- spatial_info[colnames(expression_df),]
+spatial_info <- cbind(ID = rownames(spatial_info), spatial_info)
+identical(spatial_info$ID, colnames(expression_df))
+write.csv(spatial_info,file = "D10_Visium_ChikenHeart_xy.csv",row.names = F,quote = F)
+
+
+# D14
+# read spatial data and creat seurat object
+Data_path <- paste0("e:/Data and Code/Source data/chicken heart visium/GSM4502485_chicken_heart_spatial_RNAseq_D14_filtered_feature_bc_matrix.h5")
+expression_df <- Read10X_h5(filename = Data_path)
+# this is seurat object
+expression_df <- CreateSeuratObject(expression_df)
+expression_df
+# save Seuratobject
+SaveH5Seurat(expression_df, filename = "D14_Visium_ChikenHeart_expression.h5seurat")
+# convert to h5ad
+Convert("D14_Visium_ChikenHeart_expression.h5seurat", dest = "h5ad")
+# "151673_humanBrain.h5ad"
+
+# save spatial x y coordinate
+spatial_info <- read.csv("e:/Data and Code/Source data/chicken heart visium/chicken_heart_spatial_RNAseq_D14_tissue_positions_list.csv",header = F)
+spatial_info <- data.frame(row.names = spatial_info$V1,
+                           x = spatial_info$V4,
+                           y = spatial_info$V3)
+# matching expression matrix and corridnate
+spatial_info <- spatial_info[colnames(expression_df),]
+spatial_info <- cbind(ID = rownames(spatial_info), spatial_info)
+identical(spatial_info$ID, colnames(expression_df))
+write.csv(spatial_info,file = "D14_Visium_ChikenHeart_xy.csv",row.names = F,quote = F)

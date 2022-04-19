@@ -1,0 +1,8 @@
+# mean UMI 
+mean(colSums(expression_df@assays$Spatial@counts))
+# variation
+sd(colSums(expression_df@assays$Spatial@counts))
+# mean unique gene
+mean(colSums(expression_df@assays$Spatial@counts>0))
+# mean variation
+sd(colSums(expression_df@assays$Spatial@counts>0))

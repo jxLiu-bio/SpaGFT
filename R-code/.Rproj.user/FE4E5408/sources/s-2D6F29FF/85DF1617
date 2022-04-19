@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1649716561173.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "85DF1617",
+    "lastKnownWriteTime" : 1649856949,
+    "last_content_update" : 1649856949145,
+    "path" : "E:/Dropbox/my published paper/SVG_jixin/Fourier_tranform_SVG/benchmarking-brain-data.R",
+    "project_path" : "benchmarking-brain-data.R",
+    "properties" : {
+        "cursorPosition" : "10,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled2"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

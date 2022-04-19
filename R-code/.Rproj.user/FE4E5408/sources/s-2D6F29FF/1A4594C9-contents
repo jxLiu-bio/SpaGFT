@@ -1,0 +1,65 @@
+a <- read.csv("e:/Dropbox/my published paper/SVG_jixin/results/03022022-inquiry letter/human_brain_SVG.txt",header = F)
+b <- read.csv("e:/Dropbox/my published paper/SVG_jixin/results/03022022-inquiry letter/FU_gene_summary.txt",header = F)
+length(intersect(a$V1,b$V1))
+c <- unique(c(a$V1,b$V1))
+# write.csv(c,file = "e:/Dropbox/my published paper/SVG_jixin/results/03022022-inquiry letter/SVG_checked_in_paper_and_Fu.txt",quote = F,row.names = F)
+length(intersect(c,colnames(O_mat)))
+length(intersect(c,rownames(expression_df)))
+length(c)
+
+setwd("e:/Dropbox/my published paper/SVG_jixin/results/03022022-inquiry letter/benchmark/real data/")
+SpaGFT_res <- read.csv("SpaGFT_151673_ranking_tune.csv",row.names = 1)
+spark_res <- read.csv("SPARK_151673_ranking.csv",row.names = 1)
+sparkX_res <- read.csv("SPARK-X_151673_ranking.csv",row.names = 1)
+SpatialDE_res <- read.csv("SpatialDE_151673_ranking.csv",row.names = 1)
+
+plot(SpaGFT_res$smooth_score)
+library(GeneOverlap)
+cutoff <- 0.35
+SpaGTF_all <- rownames(SpaGFT_res)[SpaGFT_res$smooth_score >= cutoff]
+SpaGFT_intersect <- intersect(c,SpaGTF_all)
+pool <- length(rownames(expression_df))
+
+go.obj <- newGeneOverlap(SpaGTF_all,c,genome.size = pool)
+
+go.obj <- testGeneOverlap(go.obj)
+go.obj
+
+# spark
+Spark_all <- rownames(spark_res)[spark_res$adjusted_pvalue < 0.05]
+Spark_intersect <-  intersect(c,Spark_all)
+
+go.obj <- newGeneOverlap(Spark_all,c,genome.size = pool)
+
+go.obj <- testGeneOverlap(go.obj)
+go.obj@odds.ratio
+go.obj
+
+# spark-x
+SparkX_all <- rownames(sparkX_res)[sparkX_res$adjustedPval < 0.05]
+SparkX_intersect <-  intersect(c,SparkX_all)
+
+go.obj <- newGeneOverlap(SparkX_all,c,genome.size = pool)
+
+go.obj <- testGeneOverlap(go.obj)
+go.obj@odds.ratio
+go.obj
+
+
+
+# SpatialDE
+SpatialDE_all <- SpatialDE_res$g[SpatialDE_res$BIC > 0 & SpatialDE_res$qval < 0.05]
+SpatialDE_intersect <-  intersect(c,SpatialDE_all)
+
+go.obj <- newGeneOverlap(SpatialDE_all,c,genome.size = pool)
+
+go.obj <- testGeneOverlap(go.obj)
+go.obj@odds.ratio
+go.obj
+
+# visualization
+my.table <- openxlsx::read.xlsx("summary.xlsx")
+rownames(my.table) <- my.table$X1
+my.table_melt <- reshape2::melt(my.table,c("X1","time.(S)","-log_p-value"))
+
+ggplot(my.table_melt)+geom_col(aes( x = X1, y = `-log_p-value`))
