@@ -1,0 +1,145 @@
+# preload function 
+jaccard_similarity <- function(A, B) {
+  intersection = length(intersect(A, B))
+  union = length(A) + length(B) - intersection
+  return (intersection/union)
+}
+
+#
+setwd("e:/spaGFT/")
+# set up markers
+my.marker <- openxlsx::read.xlsx("marker_cortical layer marker.xlsx")
+table(my.marker$species)
+human_marker <- unique(my.marker$`gene_symbol(H)`)
+mouse_marker <- unique(my.marker$`gene_symbol(M)`)
+# set up sample names
+#  check data
+my.sample.list <- read.table("e:/spaGFT/benchmarking/batch_names/all_names.txt")
+my.sample.list <- my.sample.list$V1
+# my.sample.name <- unique(unlist(sapply(strsplit(my.sample.list,split = "_"),"[",1)))
+# my.technology <- unique(unlist(sapply(strsplit(my.sample.list,split = "_"),"[",2)))
+# my.sample.annotation <- unique(unlist(sapply(strsplit(my.sample.list,split = "_"),"[",3)))
+
+# my.sample.technology.name <- gsub("_expression.h5seurat","_SPARK-X_default.csv",my.sample.list)
+# my.list <- list.files(path = "e:/spaGFT/SPARK-X/",pattern = ".csv")
+# setdiff(my.sample.technology.name,my.list)
+# look at human brain
+# "1_1" = "CT1", 
+# "18_64" = "CT2", 
+# "2_3" = "AD1",
+# "2_5" = "CT3",
+# "2_8" = "AD2",
+# "T4857" = "AD3"
+# remove 1-7-AD_Visum_HumanBrain_expression.h5seurat 2-10-AD_Visum_HumanBrain_expression.h5seurat
+my.sample.list.filter <- grep("Brain|OlfactoryBulb",my.sample.list,value = T)
+my.sample.list.filter <- my.sample.list.filter[c(-2,-16)]
+
+my.sample.name <- gsub("_expression.h5seurat","",my.sample.list.filter)
+
+# setup software
+my.software <- c("MERINGUE","SpaGCN","SPARK","SPARK-X","SpatialDE","SpaGFT")
+# Jaccard, Szymkiewicz–Simpson coefficient, Tversky index, Sørensen coefficient, F1
+
+my.score.matrix <- matrix(rep("NA",6* length(my.sample.name)),nrow = length(my.sample.name))
+rownames(my.score.matrix) <- my.sample.name
+colnames(my.score.matrix) <- my.software
+my.score_Jaccard <- my.score.matrix
+my.score_OverlapCoef <-my.score.matrix
+my.score_TverskyIndex <- my.score.matrix
+my.score_FisherStatistic <- my.score.matrix
+my.time <- my.score.matrix
+my.RAM <- my.score.matrix
+for (i in 1:length(my.software)){
+  tmp.software <- my.software[i]
+  log_name <- paste0(tmp.software,"_log")
+  print(i)
+  for (j in 1:length(my.sample.name)){
+    tmp.sample.name <- my.sample.name[j]
+    file.name <- file.path("e:/spaGFT/",
+                           tmp.software,
+                           paste0(tmp.sample.name,
+                                  "_",tmp.software,"_default.csv"))
+    file.existence <- file.exists(file.name)
+    if(!file.existence){
+      my.score_Jaccard[tmp.sample.name,tmp.software] <- "NA"
+      my.score_OverlapCoef[tmp.sample.name,tmp.software]<- "NA"
+      my.score_TverskyIndex[tmp.sample.name,tmp.software] <- "NA"
+      next()
+    }
+    # running time 
+    memory_run_time_file.name <-  file.path("e:/spaGFT/",
+                                            tmp.software,
+                                            log_name,
+                                            log_name)
+    tmp_time_RAM <- read.table(memory_run_time_file.name)
+    tmp_time_RAM.existence <- any(grepl(my.sample.name[j],tmp_time_RAM$V2))
+    if(!tmp_time_RAM.existence){
+      my.time[tmp.sample.name,tmp.software] <- "NA"
+      my.RAM[tmp.sample.name,tmp.software] <- "NA"
+      next()
+    }
+    # read results
+    tmp_results <- read.csv(file.name,row.names = 1)
+    # filter 
+    if (tmp.software == "MERINGUE"){
+      out_results <- tmp_results[tmp_results$p.adj < 0.05,]
+      } 
+    if (tmp.software == "SpaGCN"){
+      out_results <- tmp_results[tmp_results$pvals_adj <0.05,]
+      out_results <- out_results[!duplicated(out_results$genes),]
+      rownames(out_results) <- out_results$genes
+      } 
+    if (tmp.software == "SPARK"){
+      out_results <- tmp_results[tmp_results$adjusted_pvalue <0.05,]
+      } 
+    if (tmp.software == "SPARK-X"){
+      out_results <- tmp_results[tmp_results$adjustedPval <0.05,]
+      } 
+    if (tmp.software == "SpatialDE"){
+      out_results <- tmp_results[tmp_results$BIC > 0 & tmp_results$qval <0.05,]
+      rownames(out_results) <- out_results$g
+    }
+    if (tmp.software == "SpaGFT"){
+      out_results <- tmp_results[tmp_results$svg_rank < 2000 & tmp_results$qvalue < 0.05,]
+      rownames(out_results) <- out_results$features
+    }
+    predicted.gene <- rownames(out_results)
+    # select human and mouse marker
+    if(grepl("human",file.name,ignore.case = T)){gt_marker = human_marker}
+    if(grepl("mouse",file.name,ignore.case = T)){gt_marker = mouse_marker}
+    sore_Jaccard <- jaccard_similarity(predicted.gene,gt_marker)
+    score_Overlap_coef <- ribiosUtils::overlapCoefficient(predicted.gene,gt_marker)
+    score_TverskyIndex <- tcR::tversky.index(predicted.gene,gt_marker)
+    score_FisherStatistic <- GeneOverlap::newGeneOverlap(predicted.gene,gt_marker,genome.size = 30000)
+    score_FisherStatistic <- GeneOverlap::testGeneOverlap(score_FisherStatistic)
+    score_FisherStatistic <- score_FisherStatistic@odds.ratio
+    my.score_Jaccard[tmp.sample.name,tmp.software] <- round(sore_Jaccard,2)
+    my.score_OverlapCoef[tmp.sample.name,tmp.software]<- round(score_Overlap_coef,2)
+    my.score_TverskyIndex[tmp.sample.name,tmp.software] <- round(score_TverskyIndex,2)
+    my.score_FisherStatistic[tmp.sample.name,tmp.software] <- round(score_FisherStatistic,2)
+    # time 
+    one_item <- grep(my.sample.name[j],tmp_time_RAM$V2,value = T)[length(grep(my.sample.name[j],tmp_time_RAM$V2,value = T))]
+    tmp.time <- grep("time",unlist((strsplit(one_item,";"))),value = T)
+    tmp.time <- round(as.numeric(sapply(strsplit(tmp.time,":"),"[",2)),2)
+    tmp.RAM <- grep("mem",unlist((strsplit(one_item,";"))),value = T)
+    tmp.RAM <- as.numeric(sapply(strsplit(tmp.RAM,":"),"[",2))
+    if(tmp.software == "SpaGFT"|tmp.software == "SpatialDE"|tmp.software == "SpaGCN"){
+      tmp.RAM <- round(tmp.RAM/1000000,2)
+      }
+    my.time[tmp.sample.name,tmp.software] <- tmp.time
+    my.RAM[tmp.sample.name,tmp.software] <- tmp.RAM
+  }
+}
+
+xlsx::write.xlsx(my.score_Jaccard,file = "e:/spaGFT/Benchmark_res.xlsx",sheetName = "Jaccard_index")
+xlsx::write.xlsx(my.score_OverlapCoef,file = "e:/spaGFT/Benchmark_res.xlsx",sheetName = "Overlap_Coef",append = T)
+xlsx::write.xlsx(my.score_TverskyIndex,file = "e:/spaGFT/Benchmark_res.xlsx",sheetName = "Tversky_index",append = T)
+xlsx::write.xlsx(my.score_FisherStatistic,file = "e:/spaGFT/Benchmark_res.xlsx",sheetName = "Fisher_statistic",append = T)
+xlsx::write.xlsx(my.time,file = "e:/spaGFT/Benchmark_res.xlsx",sheetName = "my.time",append = T)
+xlsx::write.xlsx(my.RAM,file = "e:/spaGFT/Benchmark_res.xlsx",sheetName = "my.RAM",append = T)
+
+
+
+
+
+

@@ -1,0 +1,60 @@
+sample_name <- "scenario1_HS_900"
+subset_spots <- 100
+spot_ID <- 25
+
+file_name_spectrum <- paste0("e:/Dropbox/my published paper/SVG_jixin/results/02132022-windo-try/scenario1_HS_900subset/",
+                             sample_name,"subset_",subset_spots, "_scoreSpectrum.csv")
+file_name_gene_siml <- paste0("e:/Dropbox/my published paper/SVG_jixin/results/02132022-windo-try/scenario1_HS_900subset/",
+                              sample_name,"subset_",subset_spots, "_count_mtx.csv")
+
+expression_df <- read.csv(file_name_gene_siml,header = T) 
+spectrum_df <- read.csv(file_name_spectrum,header = T,row.names = 1)
+spectrum_df <- spectrum_df[,-1]
+
+SVG_spot_id <- grep("SVG",colnames(expression_df),value = T)[spot_ID]
+NULL_spot_id <- grep("NULL",colnames(expression_df),value = T)[spot_ID+2]
+
+#
+x_y <- expression_df[,c("x","y")]
+
+
+plot_dim_df <- data.frame(row.names = rownames(expression_df),
+                          x_y, 
+                          SVG_expression = expression_df[,SVG_spot_id],
+                          NULL_expression = expression_df[,NULL_spot_id]
+)
+library(ggplot2)
+library(cowplot)
+p_SVG <- ggplot(plot_dim_df, aes(x = x, y = y, color = log1p(SVG_expression))) + 
+  geom_point(size  = 2) + 
+  scale_color_gradientn(colours = viridis::magma(10)) + theme(legend.position = "none",axis.title=element_blank(),
+                                                              axis.text=element_blank(),
+                                                              axis.ticks=element_blank())
+p_NULL <- ggplot(plot_dim_df, aes(x = x, y = y, color = log1p(NULL_expression))) + 
+  geom_point(size  = 2) + 
+  scale_color_gradientn(colours = viridis::magma(10)) + theme(legend.position = "none",axis.title=element_blank(),
+                                                              axis.text=element_blank(),
+                                                              axis.ticks=element_blank())
+
+
+SVG_fourier <- spectrum_df[paste0(sample_name,"subset_",subset_spots,"_",SVG_spot_id),]
+NULL_fourier <- spectrum_df[paste0(sample_name,"subset_",subset_spots,"_",NULL_spot_id),]
+# 
+# barplot(height = as.numeric(SVG_fourier)[2:50])
+# barplot(height = as.numeric(NULL_fourier)[2:50])
+
+gg_df <- as.data.frame(cbind(ID = 1:length(as.numeric(SVG_fourier)[1:50]), value = as.numeric(SVG_fourier)[1:50]))
+barplot <- ggplot(gg_df, aes( x = ID, y = value)) + geom_col() + theme_void()
+bar_code <- ggplot(gg_df, aes( x = ID, y = 1, fill = value)) + 
+  geom_tile()+ 
+  theme_void()+ scale_fill_gradient(low = "white",high = "black") + theme(legend.position = "none")
+
+gg_NULL_df <- as.data.frame(cbind(ID = 1:length(as.numeric(NULL_fourier)[1:50]), value = as.numeric(NULL_fourier)[1:50]))
+barplot_NULL <- ggplot(gg_NULL_df, aes( x = ID, y = value)) + geom_col() + theme_void()
+bar_code_NULL <- ggplot(gg_NULL_df, aes( x = ID, y = 1, fill = value)) + 
+  geom_tile()+ 
+  theme_void()+ scale_fill_gradient(low = "white",high = "black") + theme(legend.position = "none")
+
+library(cowplot)
+plot_grid(p_SVG,barplot, bar_code,ncol = 1,rel_heights = c(2,1,1))
+plot_grid(p_NULL,barplot_NULL, bar_code_NULL,ncol = 1,rel_heights = c(2,1,1))

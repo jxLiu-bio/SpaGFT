@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1649720668263.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "C817F31F",
+    "lastKnownWriteTime" : 1649720195,
+    "last_content_update" : 1649720668263,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "F1B42C58",
+        "caption" : "my.score_FisherStatistic",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=my.score_FisherStatistic&cache_key=F1B42C58",
+        "displayedObservations" : 64,
+        "environment" : "",
+        "expression" : "my.score_FisherStatistic",
+        "object" : "my.score_FisherStatistic",
+        "preview" : 0,
+        "totalObservations" : 64,
+        "variables" : 6
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

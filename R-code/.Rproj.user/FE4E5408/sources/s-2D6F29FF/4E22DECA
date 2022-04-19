@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1649883332495.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "4E22DECA",
+    "lastKnownWriteTime" : 1650290793,
+    "last_content_update" : 1650291942098,
+    "path" : "E:/Dropbox/my published paper/SVG_jixin/Fourier_tranform_SVG/benchmarking-parameter-combination.R",
+    "project_path" : "benchmarking-parameter-combination.R",
+    "properties" : {
+        "cursorPosition" : "112,121",
+        "scrollLine" : "101",
+        "tempName" : "Untitled3"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
