@@ -15,19 +15,23 @@ Before installing ```SpaGFT``` formally, the following dependency packages are
 required:
 
 ``` 
-numpy==1.20.3 
-pandas==1.3.4
-scipy==1.7.1
-networkx==2.6.3
-scanpy==1.8.2
-statsmodels==0.13.1 
-scikit-learn==1.0.1
+kneed==0.7.0
+louvain==0.7.1
+matplotlib==3.5.2
+networkx==2.8
+numba==0.55.1
+numpy ==1.21.5
+pandas==1.4.2
+plotnine==0.8.0
+scanpy==1.9.1
+scikit-learn==1.0.2
+scipy==1.8.0
 ```
 You can install all dependencies by:
 ```shell
 git clone https://github.com/jxLiu-bio/SpaGFT
 cd SpaGFT/SpaGFT_packages
-pip install -r requirments.txt
+pip install -r requirements.txt
 ```
 ### Install SpaGFT from GitHub
 ```shell
