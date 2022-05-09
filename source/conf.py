@@ -62,5 +62,5 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 html_show_sphinx = False
-html_logo = '_static/img/SpaGFT_Logo.svg'
+html_logo = '_static/img/SpaGFT_Logo_RBG.png'
 
