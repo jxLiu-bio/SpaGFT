@@ -55,7 +55,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # a list of builtin themes.
 #
 # html_theme = 'alabaster'
-# html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -65,7 +65,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 #     github_repo='SpaGFT',  # Repo name
 #     github_version='master',  # Version
 # )
-# html_static_path = ['_static']
-# html_show_sphinx = False
+html_static_path = ['_static']
+html_show_sphinx = False
 html_logo = '_static/img/SpaGFT_Logo_RGB.png'
 
