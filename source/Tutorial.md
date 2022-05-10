@@ -1,5 +1,8 @@
-<h1><center>SpaGFT Tutorial</center></h1>
-<center>SpaGFT is a python package to process spatial transcript omics data by graph Fourier transform.
+<center>
+    
+#SpaGFT Tutorial
+    
+SpaGFT is a python package to process spatial transcript omics data by graph Fourier transform.
 
 ## Outline
 1. [Installation](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Toturial.md#1-Installation)
