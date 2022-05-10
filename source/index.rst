@@ -24,8 +24,7 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
 ::
    :caption: Toturial
    :maxdepth: 1
-   :hidden:
-   spatial/Lymph_node
+   :hidden: spatial/Lymph_node
 
 .. toctree::
    :caption: Example Datasets
