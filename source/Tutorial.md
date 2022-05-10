@@ -1,6 +1,6 @@
 <center>
     
-#SpaGFT Tutorial
+# SpaGFT Tutorial
     
 SpaGFT is a python package to process spatial transcript omics data by graph Fourier transform.
 
