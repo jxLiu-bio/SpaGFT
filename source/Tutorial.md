@@ -74,7 +74,7 @@ adata.raw = adata
      (0:00:01)
     
 
-###4. QC and preprocessing
+### 4. QC and preprocessing
 
 We proceed to normalize Visium counts data with the built-in normalize_total method from Scanpy and filter genes which express less than 1o spots.
 
@@ -90,7 +90,7 @@ sc.pp.log1p(adata)
         finished (0:00:00)
     
 
-###5. Find Spatially variable genes
+### 5. Find Spatially variable genes
 
 
 ```python
@@ -152,7 +152,7 @@ sc.pl.spatial(adata, color=svg_list[:5])
 **Figure_1**![](./_static/results/Figure_1.png)
 
 
-###6. Detect tissue module
+### 6. Detect tissue module
 
 ```python
 spg.gft.find_tissue_module(adata)
