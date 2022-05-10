@@ -18,6 +18,7 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    References
    Release
    Contact
+   Toturial
    spatial/151673_HumanBrain
 
 
