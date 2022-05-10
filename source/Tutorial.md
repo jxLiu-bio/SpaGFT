@@ -5,12 +5,12 @@
 SpaGFT is a python package to process spatial transcript omics data by graph Fourier transform.
 
 ## Outline
-1. [Installation](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Toturial.md#1-Installation)
-2. [Loading packages](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Toturial.md#2-Loading-packages)
-3. [Loading Visium data](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Toturial.md#3-Loading-Visium-data)
-4. [QC and preprocessing](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Toturial.md#4-QC-and-preprocessing)
-5. [Find Spatially variable genes](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Toturial.md#5-Find-Spatially-variable-genes)
-6. [Detect tissue module](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Toturial.md#6-Detect-tissue-module)
+1. [Installation](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Tutorial.md#1-Installation)
+2. [Loading packages](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Tutorial.md#2-Loading-packages)
+3. [Loading Visium data](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Tutorial.md#3-Loading-Visium-data)
+4. [QC and preprocessing](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Tutorial.md#4-QC-and-preprocessing)
+5. [Find Spatially variable genes](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Tutorial.md#5-Find-Spatially-variable-genes)
+6. [Detect tissue module](https://github.com/jxLiu-bio/SpaGFT/blob/master/source/Tutorial.md#6-Detect-tissue-module)
 <br>
 
 
