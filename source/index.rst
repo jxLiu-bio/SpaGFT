@@ -18,15 +18,14 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    References
    Release
    Contact
-   Tutorial
-   spatial/151673_HumanBrain
+   spatial/Lymph_node
 
 
 ::
    :caption: Toturial
    :maxdepth: 1
    :hidden:
-   spatial/151673_HumanBrain
+   spatial/Lymph_node
 
 .. toctree::
    :caption: Example Datasets
