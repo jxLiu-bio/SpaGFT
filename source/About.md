@@ -13,14 +13,14 @@ modules, impute gene expression.
 insert picture (overall)
 */
 
-### SpaGFT's functions
+## SpaGFT's functions
 - Detect spatially variable genes.
 
 - Identify tissue modules.
 
 - Impute gene expression.
 
-### SpaGFT’s features
+## SpaGFT’s features
 - Hypothesis-free. _SpaGFT_ do not assume gene expression obey any distributions
 or generated from some certain techniques. It can work normally on all spatial
 transcriptomics data due to the pure data-driven character.
