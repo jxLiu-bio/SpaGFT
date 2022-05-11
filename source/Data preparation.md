@@ -1,6 +1,6 @@
 # Data preparation
 
-### Spatial transcriptomics data
+## Spatial transcriptomics data
 The following two files are needed at least:
 - Raw count matrix which indicates gene expresion information on all spots/pixels. 
 It could be ```.h5ad```,  ```.h5``` , ```.csv``` etc. once it could be load by 
