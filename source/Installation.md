@@ -1,6 +1,6 @@
 # Installation
 
-### Create a vitual environment 
+## Create a vitual environment 
 
 The virtual environment is recommended before installing ```SpaGFT```. You can
 achieve this step easily by ```annconda```. [https://www.anaconda.com/]
@@ -10,7 +10,7 @@ conda activate spagft
 ```
 If you want to quit this virtual environment, just run ``` conda deacticate ```
 
-### Install dependency packages
+## Install dependency packages
 Before installing ```SpaGFT``` formally, the following dependency packages are 
 required:
 
@@ -33,7 +33,7 @@ git clone https://github.com/jxLiu-bio/SpaGFT
 cd SpaGFT/SpaGFT_packages
 pip install -r requirements.txt
 ```
-### Install SpaGFT from GitHub
+## Install SpaGFT from GitHub
 ```shell
 python install setup.py
 ```

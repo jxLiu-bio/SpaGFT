@@ -14,17 +14,17 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    About
    System Requirements
    Installation
-   Release
+   Data preparation
    References
+   Release
    Contact
-   spatial/151673_HumanBrain
+   spatial/Lymph_node
 
 
 ::
    :caption: Toturial
    :maxdepth: 1
-   :hidden:
-   spatial/151673_HumanBrain
+   :hidden: spatial/Lymph_node
 
 .. toctree::
    :caption: Example Datasets

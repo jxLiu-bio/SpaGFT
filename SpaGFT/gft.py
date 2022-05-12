@@ -895,10 +895,11 @@ def find_tissue_module(adata,
     all_tms = gft_adata.obs.louvain.cat.categories
     tm_df = pd.DataFrame(0, index=adata.obs_names, columns='tm_' + all_tms)
     for tm in all_tms:
-        pseudo_exp = tmp_adata[:,
-                    gft_adata.obs.louvain[gft_adata.obs.louvain==tm].index].X.sum(axis=1)
+        pseudo_exp = np.ravel(tmp_adata[:,
+                    gft_adata.obs.louvain[gft_adata.obs.louvain==tm].index].X.sum(axis=1))
         tm_df['tm_' + str(tm)] = pseudo_exp
     adata.obsm['tm_expression'] = tm_df
+    tm_df = tm_df.copy()
     tm_df[tm_df < np.quantile(tm_df, q=0.85, axis=0)] = 0
     tm_df[tm_df >= np.quantile(tm_df, q=0.85, axis=0)] = 1
     adata.obsm['tm_region'] = tm_df
@@ -916,19 +917,10 @@ def find_tissue_module(adata,
             sub_gft_adata.obs.louvain[sub_gft_adata.obs.louvain==sub_tm].index].X.sum(axis=1)
             tm_df['tm-' + str(tm) + "_subTm-" + str(sub_tm)] = pseudo_exp
     adata.obsm['subTm_expression'] = tm_df
+    tm_df = tm_df.copy()
     tm_df[tm_df < np.quantile(tm_df, q=0.85, axis=0)] = 0
     tm_df[tm_df >= np.quantile(tm_df, q=0.85, axis=0)] = 1
     adata.obsm['subTm_region'] = tm_df
 
         
-    
-        
-
-        
-    
-    
-    
-    
-    
-    
-    
+      
