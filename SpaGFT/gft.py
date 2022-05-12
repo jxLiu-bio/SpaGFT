@@ -220,7 +220,7 @@ def _my_eigsh(args_tupple):
                                            which=which) 
     return((eigvals, eigvecs))
 
-def low_pass_imputation(adata,
+def low_pass_enhancement(adata,
                         ratio_low_freq='infer',
                         ratio_high_freq='infer',
                         ratio_neighbors='infer',
@@ -667,7 +667,7 @@ def rank_gene_smooth(adata,
           "in adata.obs['cutoff_gft_score']")
     adata.varm['freq_domain_svg'] = frequency_array.transpose()
     print("Gene signals in frequency domain could be found in " + 
-          "adata.varm['freq_domain']")
+          "adata.varm['freq_domain_svg']")
     adata.uns['frequencies_svg'] = eigvals
     adata.uns['fms_low'] = eigvecs_s
     adata.uns['fms_high'] =eigvecs_l
@@ -835,6 +835,11 @@ def calculate_frequcncy_domain(adata,
          " adata.varm['freq_domain']")
     adata.uns['frequencies'] = eigvals
     
+    tmp_adata = sc.AnnData(adata.varm['freq_domain'])
+    sc.pp.neighbors(tmp_adata, use_rep='X')
+    sc.tl.umap(tmp_adata)
+    adata.varm['gft_umap'] = tmp_adata.obsm['X_umap']
+    
     if return_freq_domain:
         return frequency_df
 
@@ -845,7 +850,10 @@ def find_tissue_module(adata,
                        spatial_info=['array_row', 'array_col'],
                        n_neighbors=15,
                        resolution=1,
+                       sub_n_neighbors=15,
+                       sub_resolution=0.5,
                        random_state=0,
+                       quantile=0.85,
                        **kargs):
     
 
@@ -882,45 +890,56 @@ def find_tissue_module(adata,
     gft_adata = sc.AnnData(tmp_adata.varm['freq_domain'])
     sc.pp.neighbors(gft_adata, n_neighbors=n_neighbors, use_rep='X')
     sc.tl.umap(gft_adata)
-    adata.varm['gft_umap'] = gft_adata.obsm['X_umap']
+    adata.varm['gft_umap_tm'] = gft_adata.obsm['X_umap']
     # clustering
     gft_adata = gft_adata[gene_score.index[:n_genes], :]
     sc.pp.neighbors(gft_adata, n_neighbors=n_neighbors, use_rep='X')
     sc.tl.louvain(gft_adata, resolution=resolution, random_state=random_state,
                   **kargs)
-    adata.var['tm_genes'] = 'None'
-    adata.var.loc[gft_adata.obs_names, 'tm_genes'] = gft_adata.obs.louvain
-    adata.var['tm_genes'] = pd.Categorical(adata.var['tm_genes'])
+    adata.var['tissue_module'] = 'None'
+    adata.var.loc[gft_adata.obs_names, 'tissue_module'] = gft_adata.obs.louvain
+    adata.var['tissue_module'] = pd.Categorical(adata.var['tissue_module'])
     # tm pseudo expression
     all_tms = gft_adata.obs.louvain.cat.categories
     tm_df = pd.DataFrame(0, index=adata.obs_names, columns='tm_' + all_tms)
     for tm in all_tms:
-        pseudo_exp = np.ravel(tmp_adata[:,
-                    gft_adata.obs.louvain[gft_adata.obs.louvain==tm].index].X.sum(axis=1))
+        pseudo_exp = tmp_adata[:,
+                    gft_adata.obs.louvain[gft_adata.obs.louvain==tm].index].X.sum(axis=1)
         tm_df['tm_' + str(tm)] = pseudo_exp
-    adata.obsm['tm_expression'] = tm_df
-    tm_df = tm_df.copy()
+    adata.obsm['tm_expression'] = tm_df.copy()
     tm_df[tm_df < np.quantile(tm_df, q=0.85, axis=0)] = 0
     tm_df[tm_df >= np.quantile(tm_df, q=0.85, axis=0)] = 1
     adata.obsm['tm_region'] = tm_df
     # sub tm expression clustering
     tm_df = pd.DataFrame(index=adata.obs_names)
+    adata.var['sub_TM'] = 'None'
     for tm in all_tms:
         tm_gene_list = gft_adata.obs.louvain[gft_adata.obs.louvain==tm].index
         sub_gft_adata = gft_adata[tm_gene_list, :].copy()
-        sc.pp.neighbors(sub_gft_adata, n_neighbors=n_neighbors, use_rep='X')
-        sc.tl.louvain(sub_gft_adata, resolution=0.5, random_state=random_state,
+        sc.pp.neighbors(sub_gft_adata, n_neighbors=sub_n_neighbors, use_rep='X')
+        sc.tl.louvain(sub_gft_adata, resolution=sub_resolution, random_state=random_state,
                       **kargs)
         all_sub_tms = sub_gft_adata.obs.louvain.cat.categories
         for sub_tm in all_sub_tms:
-            pseudo_exp = tmp_adata[:,
-            sub_gft_adata.obs.louvain[sub_gft_adata.obs.louvain==sub_tm].index].X.sum(axis=1)
+            subTm_gene_list =sub_gft_adata.obs.louvain[sub_gft_adata.obs.louvain==sub_tm].index
+            adata.var.loc[subTm_gene_list, 'sub_TM'] =  sub_tm
+            pseudo_exp = tmp_adata[:, subTm_gene_list].X.sum(axis=1)
+            pseudo_exp = np.ravel(pseudo_exp)
             tm_df['tm-' + str(tm) + "_subTm-" + str(sub_tm)] = pseudo_exp
-    adata.obsm['subTm_expression'] = tm_df
-    tm_df = tm_df.copy()
-    tm_df[tm_df < np.quantile(tm_df, q=0.85, axis=0)] = 0
-    tm_df[tm_df >= np.quantile(tm_df, q=0.85, axis=0)] = 1
+    adata.obsm['subTm_expression'] = tm_df.copy()
+    tm_df[tm_df < np.quantile(tm_df, q=quantile, axis=0)] = 0
+    tm_df[tm_df >= np.quantile(tm_df, q=quantile, axis=0)] = 1
     adata.obsm['subTm_region'] = tm_df
 
         
-      
+    
+        
+
+        
+    
+    
+    
+    
+    
+    
+    
