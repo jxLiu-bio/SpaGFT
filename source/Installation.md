@@ -30,7 +30,7 @@ scipy==1.8.0
 You can install all dependencies by:
 ```shell
 git clone https://github.com/jxLiu-bio/SpaGFT
-cd SpaGFT/SpaGFT_packages
+cd SpaGFT
 pip install -r requirements.txt
 ```
 ## Install SpaGFT from GitHub
