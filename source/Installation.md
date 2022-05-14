@@ -35,6 +35,6 @@ pip install -r requirements.txt
 ```
 ## Install SpaGFT from GitHub
 ```shell
-python install setup.py
+python setup.py install
 ```
 
