@@ -1,7 +1,17 @@
+<p align="center">
+
+   <img src="https://github.com/jxLiu-bio/SpaGFT/blob/master/source/images/SpaGFT_logo.svg?raw=True" width="200">
+
+</p>
 # SpaGFT : Graph fourier transformer for representation, analysis, and interpretation of spatially variable genes
 <img src="https://img.shields.io/badge/SpaGFT-v1.0.0-green"><img src="https://img.shields.io/badge/Platform-Linux-green"> <img src="https://img.shields.io/badge/Language-python3-green"> <img src="https://img.shields.io/badge/License-MIT-green">
 
 Given gene expression matrix that consists $n$ spots as well as their spatial coordinates and $n$ genes, ```SpaGFT``` can detect spatially variable genes (SVG) and identify tissue modules which determined by a group of SVGs with similar spatial patterns.
+<p align="center">
+
+   <img src="https://github.com/jxLiu-bio/SpaGFT/blob/master/source/images/SpaGFT_workflow.tif">
+
+</p>
 ## System requirments
 ### Hardware Requirements
 ```SpaGFT``` is friendly to hardware. All functions in _SpaGFT_ need the minimum
