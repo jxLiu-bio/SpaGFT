@@ -29,8 +29,7 @@ gene_df = spg.rank_gene_smooth(adata,
                                spatial_info=['array_row', 'array_col'],
                                ratio_low_freq=0.5,
                                ratio_high_freq=3,
-                               ratio_neighbors=1,
-                               filter_peaks=True)
+                               ratio_neighbors=1)
 svg_list = gene_df[gene_df.cutoff_gft_score][gene_df.qvalue < 0.05].index.tolist()
 gene_df = gene_df.loc[svg_list, :]
 ## genes in svg_list are spatially variable genes identified by SpaGFT
@@ -65,9 +64,7 @@ spg.calculate_frequcncy_domain(adata,
                                ratio_low_freq=2,
                                ratio_high_freq=0,
                                ratio_neighbors=1,
-                               spatial_info=['array_row', 'array_col'],
-                               filter_peaks=False,
-                               normalize_lap=False)
+                               spatial_info=['array_row', 'array_col'])
 spg.plot.umap_svg(adata, size=2, coord_ratio=1.2)  
     
 # ******************************
@@ -78,19 +75,19 @@ spg.gft.find_tissue_module(adata,
 gene_df = adata.var.loc[svg_list, :]
 # visualize TM
 spg.plot.scatter_tm_expression(adata,
-                               tm='0',
+                               tm='1',
                                cmap='Spectral_r',
                                spatial_info=['array_row', 'array_col'],
                                coord_ratio=0.7,
                                size=3)
 spg.plot.scatter_tm_expression(adata,
-                               tm='0-0',
+                               tm='1-1',
                                cmap='Spectral_r',
                                spatial_info=['array_row', 'array_col'],
                                coord_ratio=0.7,
                                size=3)
 spg.plot.scatter_tm_binary(adata,
-                            tm='0',
+                            tm='1',
                             spatial_info=['array_row', 'array_col'],
                             coord_ratio=0.7,
                             size=3)

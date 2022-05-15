@@ -891,8 +891,11 @@ def find_tissue_module(adata,
     sc.pp.neighbors(gft_adata, n_neighbors=n_neighbors, use_rep='X')
     sc.tl.louvain(gft_adata, resolution=resolution, random_state=random_state,
                   **kwargs)
+    gft_adata.obs.louvain = [str(eval(i_tm) + 1) for i_tm in \
+                             gft_adata.obs.louvain.tolist()]
+    gft_adata.obs.louvain = pd.Categorical(gft_adata.obs.louvain)
     adata.var['tissue_module'] = 'None'
-    adata.var.loc[gft_adata.obs_names, 'tissue_module'] = gft_adata.obs.louvain
+    adata.var.loc[gft_adata.obs_names, 'tissue_module'] = gft_adata.obs.louvain 
     adata.var['tissue_module'] = pd.Categorical(adata.var['tissue_module'])
     # tm pseudo expression
     all_tms = gft_adata.obs.louvain.cat.categories
@@ -905,6 +908,8 @@ def find_tissue_module(adata,
     adata.obsm['tm_expression'] = tm_df.copy()
     tm_df[tm_df < np.quantile(tm_df, q=0.85, axis=0)] = 0
     tm_df[tm_df >= np.quantile(tm_df, q=0.85, axis=0)] = 1
+    tm_df = tm_df.astype(int)
+    tm_df = tm_df.astype(str)
     adata.obsm['tm_region'] = tm_df
     # sub tm expression clustering
     tm_df = pd.DataFrame(index=adata.obs_names)
@@ -915,6 +920,9 @@ def find_tissue_module(adata,
         sc.pp.neighbors(sub_gft_adata, n_neighbors=sub_n_neighbors, use_rep='X')
         sc.tl.louvain(sub_gft_adata, resolution=sub_resolution, random_state=random_state,
                       **kwargs)
+        sub_gft_adata.obs.louvain = [str(eval(i_tm) + 1) for i_tm in \
+                                 sub_gft_adata.obs.louvain.tolist()]
+        sub_gft_adata.obs.louvain = pd.Categorical(sub_gft_adata.obs.louvain)
         all_sub_tms = sub_gft_adata.obs.louvain.cat.categories
         for sub_tm in all_sub_tms:
             subTm_gene_list =sub_gft_adata.obs.louvain[sub_gft_adata.obs.louvain==sub_tm].index
@@ -925,6 +933,8 @@ def find_tissue_module(adata,
     adata.obsm['subTm_expression'] = tm_df.copy()
     tm_df[tm_df < np.quantile(tm_df, q=quantile, axis=0)] = 0
     tm_df[tm_df >= np.quantile(tm_df, q=quantile, axis=0)] = 1
+    tm_df = tm_df.astype(int)
+    tm_df = tm_df.astype(str)
     adata.obsm['subTm_region'] = tm_df
 
         
