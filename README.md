@@ -45,10 +45,10 @@ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 ```
 
-
+Create a separated virtual envrionment
 ```shell
-conda create -n spagft python==3.8
-conda activate spagft
+conda create -n spagft_env python==3.8
+conda activate spagft_env
 ```
 If you want to quit this virtual environment, just run ``` conda deacticate ```
 
@@ -61,9 +61,10 @@ git clone https://github.com/jxLiu-bio/SpaGFT
 cd SpaGFT
 pip install -r requirements.txt
 ```
-### Install SpaGFT from GitHub
+### Install SpaGFT from GitHub and add jupyter kernel for this environment
 ```shell
 python setup.py install
+python -m ipykernel install --user --name=spagft_env --display-name=spagft_env
 ```
 
 ## Usage and Tutorials
