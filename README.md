@@ -60,7 +60,7 @@ bash Miniconda3-latest-Linux-x86_64.sh
 
 Create a separated virtual envrionment
 ```shell
-conda create -n spagft_env python==3.8
+conda create -n spagft_env python==3.8.0
 conda activate spagft_env
 ```
 If you want to quit this virtual environment, just run ``` conda deacticate ```
