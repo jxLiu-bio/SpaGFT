@@ -869,7 +869,8 @@ def find_tissue_module(adata,
     gene_score = adata.var.sort_values(by='svg_rank')
 
     tmp_adata = adata.copy()
-    tmp_adata.uns.pop('log1p')
+    if 'log1p' in adata.uns_keys():
+        tmp_adata.uns.pop('log1p')
     tmp_adata.X = adata.raw[:, adata.var_names].X
     sc.pp.log1p(tmp_adata)
     calculate_frequcncy_domain(tmp_adata, 
