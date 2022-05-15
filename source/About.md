@@ -1,4 +1,4 @@
-# About
+## About
 ```SpaGFT``` is a python package to process spatial transcript omics data by
 graph Fourier transform. 
 
@@ -11,14 +11,14 @@ modules, enhance gene expression.
 
 ![](./images/SpaGFT_workflow.svg)
 
-## SpaGFT's functions
+### SpaGFT's functions
 - Detect spatially variable genes.
 
 - Identify tissue modules.
 
 - Enhance gene expression.
 
-## SpaGFT’s features
+### SpaGFT’s features
 - Hypothesis-free. _SpaGFT_ do not assume gene expressions obey any distributions
 or generated from some certain techniques. It can work normally on all spatial
 transcriptomics data due to the pure data-driven character.
