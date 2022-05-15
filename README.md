@@ -74,9 +74,14 @@ git clone https://github.com/jxLiu-bio/SpaGFT
 cd SpaGFT
 pip install -r requirements.txt
 ```
-### Install SpaGFT from GitHub and add jupyter kernel for this environment
+### Install SpaGFT from GitHuba. 
 ```shell
 python setup.py install
+```
+
+For using tutorial easily, you can install jupyter and add it this environment by
+```
+pip install jupyter
 python -m ipykernel install --user --name=spagft_env --display-name=spagft_env
 ```
 
