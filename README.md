@@ -11,7 +11,7 @@ Given gene expression matrix that consists $n$ spots as well as their spatial co
 
 <p align="center">
 
-   <img src="https://github.com/jxLiu-bio/SpaGFT/blob/master/source/images/SpaGFT_workflow.svg?raw=True" width="600">
+   <img src="https://github.com/jxLiu-bio/SpaGFT/blob/master/source/images/SpaGFT_workflow.svg?raw=True" width="1000">
 
 </p>
 
