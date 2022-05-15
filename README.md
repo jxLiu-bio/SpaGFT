@@ -65,5 +65,4 @@ python setup.py install
 ## Usage and Tutorials
 The tutorial of using ```SpaGFT``` could be found here https://spagft.readthedocs.io/en/latest/.
 
-Please report bugs via https://github.com/jxLiu-bio/SpaGFT/issues and ask any usage questions in https://github.com/jxLiu-bio/SpaGFT/discussions.
 
