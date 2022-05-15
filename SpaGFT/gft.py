@@ -167,7 +167,7 @@ def _test_significant_freq(freq_array,
         The calculated p values.
 
     """
-    from scipy.stats import ranksums
+    from scipy.stats import wilcoxon, mannwhitneyu, ranksums, combine_pvalues
     from multiprocessing.dummy import Pool as ThreadPool
     
     def _test_by_feq(gene_index):
@@ -176,12 +176,9 @@ def _test_significant_freq(freq_array,
         freq_1 = freq_1[freq_1 > 0]
         freq_2 = freq_signal[cutoff:]
         freq_2 = freq_2[freq_2 > 0]
-        if freq_1.size <= 15 or freq_2.size <= 15:
+        if freq_1.size <= 50 or freq_2.size <= 50:
             freq_1 = np.concatenate((freq_1, freq_1, freq_1, freq_1))
             freq_2 = np.concatenate((freq_2, freq_2, freq_2, freq_2))
-        elif freq_1.size <= 50 or freq_2.size <= 50:
-            freq_1 = np.concatenate((freq_1, freq_1))
-            freq_2 = np.concatenate((freq_2, freq_2))
         pval = ranksums(freq_1, freq_2, alternative='greater').pvalue
         return pval
     
