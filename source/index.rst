@@ -9,14 +9,13 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
 .. totree::
    :caption: Tutorial
    :maxdepth: 3
-   :hidden:
+
    spatial/Lymph_node
 
 
 .. toctree::
    :caption: Main
    :maxdepth: 3
-   :hidden:
 
    About
    System Requirements
