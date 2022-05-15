@@ -1,4 +1,4 @@
-# Contact
+## Contact
 Yuzhou Chang: yuzhou.chang@osumc.edu
 
 Jixin Liu: jxliu@mail.sdu.edu.cn
