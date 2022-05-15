@@ -17,7 +17,7 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    References
    Release
    Contact
-   spatial/Lymph_node
+   spatial/lymph_node
 
 
 
