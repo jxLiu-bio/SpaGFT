@@ -9,7 +9,7 @@
 Given gene expression matrix that consists $n$ spots as well as their spatial coordinates and $n$ genes, ```SpaGFT``` can detect spatially variable genes (SVG) and identify tissue modules which determined by a group of SVGs with similar spatial patterns.
 <p align="center">
 
-   <img src="https://github.com/jxLiu-bio/SpaGFT/blob/master/source/images/SpaGFT_workflow.tif?raw=True"
+   <img src="https://github.com/jxLiu-bio/SpaGFT/blob/master/source/images/SpaGFT_workflow.tif?raw=True">
 
 </p>
 ## System requirments
