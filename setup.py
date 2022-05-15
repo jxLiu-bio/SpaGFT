@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="SpaGFT",
-    version="0.0.1",
+    version="0.1.0",
     author="Jixin Liu",
     packages=['SpaGFT'],
     author_email="frankliu210@163.com",
