@@ -3,7 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 SpaGFT : Graph fourier transformer for representation, analysis, and interpretation of spatially variable genes
-<img src="https://img.shields.io/badge/RESEPT-v1.0.0-green">
 ==================================
 
 .. toctree::
