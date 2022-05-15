@@ -10,7 +10,6 @@ _SpaGFT_ can run on Windows, Linux, Mac os. The package has been tested on
 following systems:
 
 - Linux: Ubuntu 20.04
-- Windows: Windows 10, Windows 11
 
 ## Python Dependencies
 ```SpaGFT``` requries python version >= 3.7.
