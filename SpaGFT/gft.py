@@ -146,8 +146,7 @@ def _significant_test_permutation(exp_mtx,
 
 def _test_significant_freq(freq_array,
                            cutoff,
-                           num_pool=200,
-                           combine_method='fisher'):
+                           num_pool=200):
     """
     Significance test by camparing the intensities in low frequency FMs and 
     in high frequency FMs. 
@@ -158,14 +157,9 @@ def _test_significant_freq(freq_array,
         The graph signals of genes in frequency domain. 
     cutoff : int
         Watershed between low frequency signals and high frequency signals.
-    q : float, optional
-        The quantile used in filtering noise peaks. The default is 0.3.
     num_pool : int, optional
         The cores used for umltiprocess calculation to accelerate speed. The 
         default is 200.
-    combine_method : str, optional
-        The method for intergrating pvalues from multi-tests. The default is 
-        'fisher'.
 
     Returns
     -------
@@ -239,31 +233,31 @@ def low_pass_enhancement(adata,
     ----------
     adata : AnnData
         adata.X is the normalized count matrix. Besides, the spatial coordinat-
-        es of all spots could be found in adata.obs or adata.obsm.
+        es of all spots should be found in adata.obs or adata.obsm.
     ratio_low_freq : float | "infer", optional
         The ratio_low_freq will be used to determine the number of the FMs with
         low frequencies. Indeed, the ratio_low_freq * sqrt(number of spots) low
-        frequecy FMs will be calculated. If 'infer', the ratio_low_freq will be
-        set to 1.0. The default is 'infer'.
+        frequecy FMs will be calculated. The default is 'infer'.
     ratio_high_freq: float | 'infer', optional
         The ratio_high_freq will be used to determine the number of the FMs with
         high frequencies. Indeed, the ratio_high_freq * sqrt(number of spots) 
         high frequecy FMs will be calculated. If 'infer', the ratio_high_freq 
         will be set to 0. The default is 'infer'.
-        A high can achieve better smothness. c should be setted to [0, 0.05].
+        A high can achieve better smothness. c should be setted to [0, 0.1].
     ratio_neighbors: float | 'infer', optional
         The ratio_neighbors will be used to determine the number of neighbors
         when contruct the KNN graph by spatial coordinates. Indeed, ratio_neig-
         hobrs * sqrt(number of spots) / 2 indicates the K. If 'infer', the para
         will be set to 1.0. The default is 'infer'.
     c: float, optional
-        c balance the smoothness and difference with previous expresssion.
+        c balances the smoothness and difference with previous expresssion.
     spatial_info : list or tupple, optional
         The column names of spaital coordinates in adata.obs_names or key
-        in adata.varm_keys() to obtain spatial information. The default
+        in adata.obsm_keys() to obtain spatial information. The default
         is ['array_row', 'array_col'].
     normalize_lap : bool. optional
         Whether need to normalize the Laplcian matrix. The default is False.
+    inplace: bool, optional
         
 
     Returns
@@ -355,7 +349,7 @@ def select_num_fms(adata,
                    ratio_neighbors='infer',
                    spatial_info=['array_row', 'array_col'],
                    select_auto=True,
-                   cutoff_fms = 0.05,
+                   cutoff_fms=0.05,
                    normalized_lap=True):
     """
     Select FMs automatically acoording to corresponding frequencies.
@@ -476,14 +470,10 @@ def rank_gene_smooth(adata,
                      ratio_high_freq='infer', 
                      ratio_neighbors='infer',
                      spatial_info=['array_row', 'array_col'],
-                     cal_pval=True,
                      normalize_lap=False,
-                     exp_scale=True,
-                     filter_peaks=False,
+                     filter_peaks=True,
                      S=10,
-                     spec_norm=True,
-                     n_low_freq=None,
-                     a=2):
+                     cal_pval=True):
     """
     Rank genes to find spatially variable genes by graph Fourier transform.
 
@@ -498,7 +488,7 @@ def rank_gene_smooth(adata,
         frequecy FMs will be calculated. If 'infer', the ratio_low_freq will be
         set to 1.0. The default is 'infer'.
     ratio_high_freq: float | 'infer', optional
-        The ratio_high_freq will be used to determine the number of the FMs with
+        The ratio_high_freq will be used to determine the number of the FMs of
         high frequencies. Indeed, the ratio_high_freq * sqrt(number of spots) 
         high frequecy FMs will be calculated. If 'infer', the ratio_high_freq 
         will be set to 1.0. The default is 'infer'.
@@ -507,29 +497,17 @@ def rank_gene_smooth(adata,
         when contruct the KNN graph by spatial coordinates. Indeed, ratio_neig-
         hobrs * sqrt(number of spots) / 2 indicates the K. If 'infer', the para
         will be set to 1.0. The default is 'infer'.
-    spatial_name : list or tupple, optional
-        The column names of spaital coordinates in adata.obs_names. The default
+    spatial_info : list | tupple | string, optional
+        The column names of spaital coordinates in adata.obs_names or key
+        in adata.varm_keys() to obtain spatial information. The default
         is ['array_row', 'array_col'].
-    spatial_key : string or None,
-        If spatial_keq is provided, the spatial information could be found in
-        adata.obsm['spaital_key'] (spot * coordinate). The default if none.
-    cal_pval : bool, optional
-        Whether need to calculate p val by mannwhitneyu. The default is False.
     normalize_lap : bool, optional
         Whether need to normalize laplacian matrix. The default is false.
-    exp_scale : bool, optional
-        If False, the expression matrix will not be scaled. The default is 
-        True.
     filter_peaks: bool, optional
         For calculated vectors/signals in frequency/spectral domian, whether
-        filter low peaks to stress the important peaks. The default is False.
-    q : float, optional
-        Quantile or sequence of quantiles to compute in frequency/spectral 
-        domian. The default is 0.2.
-    spec_norm : None or {'l1', 'l2', 'max'}, optional
-        If None, the signal in spectral domian matrix will not be normzalized. 
-        Otherwise, the given spec_norm method will be implemented. The default
-        is l1. 
+        filter low peaks to stress the important peaks. The default is True.
+    cal_pval : bool, optional
+        Whether need to calculate p val by mannwhitneyu. The default is False.
     Returns
     -------
     score_df : dataframe
@@ -561,83 +539,59 @@ def rank_gene_smooth(adata,
     sc.pp.filter_genes(adata, min_cells=1)
     
     # *************** Construct graph and corresponding matrixs ***************
-    if 'low_freq' not in adata.uns_keys():
-        lap_mtx = get_laplacian_mtx(adata, num_neighbors=num_neighbors,
-                                    spatial_key=spatial_info,
-                                    normalization=normalize_lap)
-        
-        # Next, calculate the eigenvalues and eigenvectors of the Laplace matrix
-        # Fourier bases of low frequency
-        eigvals_s, eigvecs_s = ss.linalg.eigsh(lap_mtx.astype(float), 
-                                               k=num_low_frequency,
-                                               which='SM')  
-        if n_low_freq != None:
-            eigvals_s = eigvals_s[:n_low_freq]
-            eigvecs_s = eigvecs_s[:n_low_freq, :]
-        if num_high_frequency > 0:
-            # Fourier bases of high frequency
-            eigvals_l, eigvecs_l = ss.linalg.eigsh(lap_mtx.astype(float),
-                                                   k=num_high_frequency, 
-                                                   which='LM')       
-            eigvals = np.concatenate((eigvals_s, eigvals_l))         # eigenvalues
-            eigvecs = np.concatenate((eigvecs_s, eigvecs_l), axis=1) # eigenvectors
-        else:
-            eigvals = eigvals_s
-            eigvecs = eigvecs_s
+    lap_mtx = get_laplacian_mtx(adata, num_neighbors=num_neighbors,
+                                spatial_key=spatial_info,
+                                normalization=normalize_lap)
+    
+    # Next, calculate the eigenvalues and eigenvectors of the Laplace matrix
+    # Fourier bases of low frequency
+    eigvals_s, eigvecs_s = ss.linalg.eigsh(lap_mtx.astype(float), 
+                                           k=num_low_frequency,
+                                           which='SM')  
+    if num_high_frequency > 0:
+        # Fourier bases of high frequency
+        eigvals_l, eigvecs_l = ss.linalg.eigsh(lap_mtx.astype(float),
+                                               k=num_high_frequency, 
+                                               which='LM')       
+        eigvals = np.concatenate((eigvals_s, eigvals_l))         # eigenvalues
+        eigvecs = np.concatenate((eigvecs_s, eigvecs_l), axis=1) # eigenvectors
     else:
-        eigvals_s = adata.uns['low_freq']
-        eigvecs_s = adata.uns['low_fms']
-        if n_low_freq != None:
-            eigvals_s = eigvals_s[:n_low_freq]
-            eigvecs_s = eigvecs_s[:n_low_freq, :]
-        if 'high_freq' in adata.uns_keys():
-            eigvals_l = adata.uns['high_freq']
-            eigvecs_l = adata.uns['high_fms']
-            eigvals = np.concatenate((eigvals_s, eigvals_l))
-            eigvecs = np.concatenate((eigvecs_s, eigvecs_l), axis=1)
-        else:
-            eigvals = eigvals_s
-            eigvecs = eigvecs_s
+        eigvals = eigvals_s
+        eigvecs = eigvecs_s
         
     # ************************ Graph Fourier Tranform *************************
     # Calculate GFT
     eigvecs_T = eigvecs.transpose()
-    if exp_scale:
-        if type(adata.X) == np.ndarray:
-            exp_mtx = preprocessing.scale(adata.X)
-        else:
-            exp_mtx = preprocessing.scale(adata.X.toarray())
-
+    if type(adata.X) == np.ndarray:
+        exp_mtx = preprocessing.scale(adata.X)
     else:
-        if type(adata.X) == np.ndarray:
-            exp_mtx = adata.X
-        else:
-            exp_mtx = adata.X.toarray()
+        exp_mtx = preprocessing.scale(adata.X.toarray())
         
     frequency_array = np.matmul(eigvecs_T, exp_mtx)
     frequency_array = np.abs(frequency_array)
     
     # Filter noise peaks
     if filter_peaks == True:
-        frequency_array_thres_low = np.quantile(frequency_array[:num_low_frequency, :],
+        frequency_array_thres_low = \
+            np.quantile(frequency_array[:num_low_frequency, :],
                                             q=0.5, axis=0)
-        frequency_array_thres_high = np.quantile(frequency_array[num_low_frequency:, :],
+        frequency_array_thres_high = \
+            np.quantile(frequency_array[num_low_frequency:, :],
                                             q=0.5, axis=0)
-        # frequency_array_thres = np.mean(frequency_array, axis=0)
         for j in range(frequency_array.shape[1]):
-            # tmp = frequency_array[:num_low_frequency, j]
-            frequency_array[:num_low_frequency, :][frequency_array[:num_low_frequency, j] <= \
+            frequency_array[:num_low_frequency, :]\
+            [frequency_array[:num_low_frequency, j] <= \
                             frequency_array_thres_low[j], j]= 0
-            frequency_array[num_low_frequency:, :][frequency_array[num_low_frequency:, j] <= \
+            frequency_array[num_low_frequency:, :]\
+                [frequency_array[num_low_frequency:, j] <= \
                             frequency_array_thres_high[j], j]= 0
 
-    if spec_norm != None:
-        frequency_array = preprocessing.normalize(frequency_array, 
-                                                  norm='l1',
-                                                  axis=0)
+    frequency_array = preprocessing.normalize(frequency_array, 
+                                              norm='l1',
+                                              axis=0)
 
     eigvals = np.abs(eigvals)
-    eigvals_power = a ** ( -eigvals * 2) 
+    eigvals_power = 2 ** ( - eigvals * 2) 
     score_list = np.matmul(eigvals_power, frequency_array)
     score_max = np.matmul(eigvals_power, (1 / len(eigvals)) * \
                           np.ones(len(eigvals)))       
@@ -650,10 +604,10 @@ def rank_gene_smooth(adata,
     score_df =pd.DataFrame(score_df)
     score_df = score_df.sort_values(by="gft_score", ascending=False) 
     score_df.loc[:, "svg_rank"] = range(1, score_df.shape[0] + 1)
-    adata.var["svg_rank"] = score_df.reindex(adata.var_names).loc[:, "svg_rank"]
+    adata.var["svg_rank"] = score_df.reindex(adata.var_names).loc[:,"svg_rank"]
     print("SVG ranking could be found in adata.obs['Rank']")
     
-    # Cutoff of gft_score
+    # Determine cutoff of gft_score
     from kneed import KneeLocator
     magic = KneeLocator(score_df.svg_rank.values, 
                         score_df.gft_score.values,
@@ -674,11 +628,9 @@ def rank_gene_smooth(adata,
     
     # ****************** calculate pval ***************************
     if cal_pval == True:
-        # pval_list = _significant_test_permutation(exp_mtx=exp_mtx.transpose(),
-        #                             gene_score=score_list, eigvals=eigvals,
-        #                             eigvecs_T=eigvecs_T)
-        pval_list = _test_significant_freq(freq_array=adata.varm['freq_domain_svg'],
-                                           cutoff=num_low_frequency)
+        pval_list = _test_significant_freq(
+            freq_array=adata.varm['freq_domain_svg'],
+            cutoff=num_low_frequency)
         from statsmodels.stats.multitest import multipletests
         qval_list = multipletests(np.array(pval_list), method='fdr_by')[1]
         adata.var['pvalue'] = pval_list
@@ -694,11 +646,9 @@ def calculate_frequcncy_domain(adata,
                                spatial_info=['array_row', 'array_col'],
                                return_freq_domain=True,
                                normalize_lap=False,
-                               exp_norm=True,
-                               filter_peaks=True,
-                               spec_norm=True):
+                               filter_peaks=False):
     """
-    Obtain gene signals in frequency/spectral domain for given genes in 
+    Obtain gene signals in frequency/spectral domain for all genes in 
     adata.var_names.
 
     Parameters
@@ -715,7 +665,7 @@ def calculate_frequcncy_domain(adata,
         The ratio_high_freq will be used to determine the number of the FMs with
         high frequencies. Indeed, the ratio_high_freq * sqrt(number of spots) 
         high frequecy FMs will be calculated. If 'infer', the ratio_high_freq 
-        will be set to 1.0. The default is 'infer'.
+        will be set to 0. The default is 'infer'.
     ratio_neighbors: float | 'infer', optional
         The ratio_neighbors will be used to determine the number of neighbors
         when contruct the KNN graph by spatial coordinates. Indeed, ratio_neig-
@@ -729,20 +679,14 @@ def calculate_frequcncy_domain(adata,
         True.
     normalize_lap : bool, optional
         Whether need to normalize laplacian matrix. The default is false.
-    exp_norm: bool, optional
-        Whether need to normalize count matrix to z-score. The default is True.
     filter_peaks: bool, optional
         For calculated vectors/signals in frequency/spectral domian, whether
         filter low peaks to stress the important peaks. The default is False.
-    spec_norm: bool, optional
-        If False, the signal in spectral domian matrix will not be normzalized. 
-        Otherwise, the given l1_norm method will be implemented. The default
-        is True
 
     Returns
     -------
-    DataFrame, the index indicates the gene and the columns indicates correspo-
-    nding frequecies/smoothness. 
+    If return_freq_domain, return DataFrame, the index indicates the gene and 
+    the columns indicates corresponding frequecies/smoothness. 
 
     """ 
     # Critical parameters
@@ -800,16 +744,10 @@ def calculate_frequcncy_domain(adata,
     # ************************Graph Fourier Tranform***************************
     # Calculate GFT
     eigvecs = eigvecs.transpose()
-    if exp_norm == True:
-        if not ss.issparse(adata.X):
-            exp_mtx = preprocessing.scale(adata.X)
-        else:
-            exp_mtx = preprocessing.scale(adata.X.toarray())
+    if not ss.issparse(adata.X):
+        exp_mtx = preprocessing.scale(adata.X)
     else:
-        if not ss.issparse(adata.X):
-            exp_mtx = adata.X
-        else:
-            exp_mtx = adata.X.toarray()
+        exp_mtx = preprocessing.scale(adata.X.toarray())
     frequency_array = np.matmul(eigvecs, exp_mtx)
     frequency_array = np.abs(frequency_array)
     # Filter noise peaks
@@ -819,10 +757,9 @@ def calculate_frequcncy_domain(adata,
             frequency_array[frequency_array[:, j] <= \
                             frequency_array_thres[j], j] = 0
     # Spectral domian normalization
-    if spec_norm == True:
-        frequency_array = preprocessing.normalize(frequency_array, 
-                                                  norm='l1',
-                                                  axis=0)
+    frequency_array = preprocessing.normalize(frequency_array, 
+                                              norm='l1',
+                                              axis=0)
     
     # ********************** Results of GFT ***********************************
     frequency_df = pd.DataFrame(frequency_array, columns=adata.var_names, 
@@ -854,9 +791,64 @@ def find_tissue_module(adata,
                        sub_resolution=0.5,
                        random_state=0,
                        quantile=0.85,
-                       **kargs):
-    
+                       **kwargs):
+    '''
+    After identifying spatially variable genes, this function will group these
+    spatially variable genes sharing common spatial patterns.
 
+    Parameters
+    ----------
+   adata : AnnData
+       adata.X is the normalized count matrix. Besides, the spatial coordinat-
+       es could be found in adata.obs or adata.obsm; the gft_score should be 
+       provided in adata.obs.
+    n_genes : 'infer' | int, optional
+        Determine the number of SVGs used in clustering. If 'infer', SpaGFT 
+        will determine the number of SVGs automatically according to kneedle
+        algorithm.    
+    ratio_fms : 'infer' | float optional
+        The ratio_low_freq will be used to determine the number of the FMs with
+        low frequencies. Indeed, the ratio_low_freq * sqrt(number of spots) low
+        frequecy FMs will be calculated. The default is 'infer'.
+    ratio_neighbors: float | 'infer', optional
+        The ratio_neighbors will be used to determine the number of neighbors
+        when contruct the KNN graph by spatial coordinates. Indeed, ratio_neig-
+        hobrs * sqrt(number of spots) / 2 indicates the K. If 'infer', the para
+        will be set to 1.0. The default is 'infer'.
+    spatial_info : list | tupple | str, optional
+        The column names of spaital coordinates in adata.obs_keys() or 
+        key in adata.obsm_keys. The default is ['array_row','array_col'].
+    n_neighbors : int, optional
+        The neighbor number of k before clustering when detect tissue modules. 
+        The default is 15.
+    resolution : float, optional
+        The resolution parameter used in Louvain clustering algorithm when 
+        detect tissue modules.The default is 1.
+    sub_n_neighbors : int, optional
+        The neighbor number of k before clustering when detect sub-TMs. 
+        The default is 15.
+    sub_resolution : float, optional
+        The resolution parameter used in Louvain clustering algorithm when 
+        detect subTMs The default is 0.5.
+    random_state : int, optional
+        Random state when run Louvain algorithm. The default is 0.
+    quantile : float, optional
+        The quantile when binary tissue module pseudo expression. The default 
+        is 0.85.
+    **kwargs : TYPE
+        Parameters in sc.tl.louvain.
+
+    Raises
+    ------
+    ValueError
+        'svg_rank' should in adata.obs. rank_gene_smooth should be implemented
+        before this step.
+
+    Returns
+    -------
+    None.
+
+    '''
     # Find tissue module by grouping Spatially variable genes with similar 
     # spatial patterns acoording to louvain algorithm.
     # Check conditions and determine parameters
@@ -865,18 +857,19 @@ def find_tissue_module(adata,
                         SpaGFT.rank_gene_smooth(adata) firstly.")
     if ratio_fms == 'infer':
         if adata.shape[0] <= 500:
-            low_ratio_freq = 4
+            ratio_fms = 4
         elif adata.shape[0] <= 10000:
-            low_ratio_freq = 2
+            ratio_fms = 2
         else:
-            low_ratio_freq = 1
+            ratio_fms = 1
     if n_genes == 'infer':
         n_genes = adata.var_names[adata.var['cutoff_gft_score']].size
     elif not isinstance(n_genes, int):
-        raise ValueError("n_genes should be int.")
+        raise ValueError("n_genes should be int or 'infer'.")
     gene_score = adata.var.sort_values(by='svg_rank')
 
     tmp_adata = adata.copy()
+    tmp_adata.uns.pop('log1p')
     tmp_adata.X = adata.raw[:, adata.var_names].X
     sc.pp.log1p(tmp_adata)
     calculate_frequcncy_domain(tmp_adata, 
@@ -895,7 +888,7 @@ def find_tissue_module(adata,
     gft_adata = gft_adata[gene_score.index[:n_genes], :]
     sc.pp.neighbors(gft_adata, n_neighbors=n_neighbors, use_rep='X')
     sc.tl.louvain(gft_adata, resolution=resolution, random_state=random_state,
-                  **kargs)
+                  **kwargs)
     adata.var['tissue_module'] = 'None'
     adata.var.loc[gft_adata.obs_names, 'tissue_module'] = gft_adata.obs.louvain
     adata.var['tissue_module'] = pd.Categorical(adata.var['tissue_module'])
@@ -905,6 +898,7 @@ def find_tissue_module(adata,
     for tm in all_tms:
         pseudo_exp = tmp_adata[:,
                     gft_adata.obs.louvain[gft_adata.obs.louvain==tm].index].X.sum(axis=1)
+        pseudo_exp = np.ravel(pseudo_exp)
         tm_df['tm_' + str(tm)] = pseudo_exp
     adata.obsm['tm_expression'] = tm_df.copy()
     tm_df[tm_df < np.quantile(tm_df, q=0.85, axis=0)] = 0
@@ -918,7 +912,7 @@ def find_tissue_module(adata,
         sub_gft_adata = gft_adata[tm_gene_list, :].copy()
         sc.pp.neighbors(sub_gft_adata, n_neighbors=sub_n_neighbors, use_rep='X')
         sc.tl.louvain(sub_gft_adata, resolution=sub_resolution, random_state=random_state,
-                      **kargs)
+                      **kwargs)
         all_sub_tms = sub_gft_adata.obs.louvain.cat.categories
         for sub_tm in all_sub_tms:
             subTm_gene_list =sub_gft_adata.obs.louvain[sub_gft_adata.obs.louvain==sub_tm].index
