@@ -6,9 +6,16 @@
 SpaGFT : Graph fourier transformer for representation, analysis, and interpretation of spatially variable genes
 ===================================================================================================================
 
+.. totree::
+   :caption: Tutorial
+   :maxdepth: 3
+   :hidden:
+   spatial/Lymph_node
+
+
 .. toctree::
    :caption: Main
-   :maxdepth: 1
+   :maxdepth: 3
    :hidden:
 
    About
@@ -20,10 +27,6 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    Contact
 
 
-.. totree::
-   :caption: Tutorials
-   :maxdepth: 1
-   :hidden:
-   spatial/Lymph_node
+
 
  
