@@ -20,6 +20,8 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
 
 
 Toturial: analysize human lymph node cell types to 10X Visium.
+
+
 .. toctree::
    :maxdepth: 3
    :caption: Toturial
