@@ -4,14 +4,7 @@
    contain the root `toctree` directive.
 
 SpaGFT : Graph fourier transformer for representation, analysis, and interpretation of spatially variable genes
-===================================================================================================================
-
-.. totree::
-   :caption: Tutorial
-   :maxdepth: 3
-
-   spatial/Lymph_node
-
+==================================================================================================================
 
 .. toctree::
    :caption: Main
@@ -24,6 +17,13 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    References
    Release
    Contact
+
+
+Toturial: analysize human lymph node cell types to 10X Visium.
+.. toctree::
+   :maxdepth: 3
+   :caption: Toturial
+   spatial/Lymph_node
 
 
 
