@@ -38,9 +38,13 @@ The virtual environment is recommended before installing ```SpaGFT```. You can
 achieve this step easily by ```annconda```. [https://www.anaconda.com/]
 
 If you do not have conda please install Miniconda first:
+
+```
 cd /path/to/software
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
+```
+
 
 ```shell
 conda create -n spagft python==3.8
