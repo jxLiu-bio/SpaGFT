@@ -1,6 +1,6 @@
-# Data preparation
+## Data preparation
 
-## Spatial transcriptomics data
+### Spatial transcriptomics data
 The following two files are needed at least:
 - Raw count matrix which indicates gene expresion information on all spots/pixels. 
 It could be ```.h5ad```,  ```.h5``` , ```.csv``` etc. once it could be load by 
@@ -11,4 +11,5 @@ information of spots. More details could be found [here](https://scanpy.readthed
 Additionally, stained image information could be used to enhance the 
 visualization of genes or tissue modules. The method of adding them into 
 AnnData object can found in [scanpy](https://scanpy.readthedocs.io/en/stable/generated/scanpy.read_visium.html) or  [stLearn](https://stlearn.readthedocs.io/en/latest/stlearn.add.image.html).
+
 
