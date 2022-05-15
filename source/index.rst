@@ -2,8 +2,8 @@
    sphinx-quickstart on Thu Apr 14 20:04:06 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
-
 SpaGFT : Graph fourier transformer for representation, analysis, and interpretation of spatially variable genes
+<img src="https://img.shields.io/badge/RESEPT-v1.0.0-green">
 ==================================
 
 .. toctree::
@@ -20,14 +20,4 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    Contact
    spatial/Lymph_node
 
-
-::
-   :caption: Toturial
-   :maxdepth: 1
-   :hidden: spatial/Lymph_node
-
-.. toctree::
-   :caption: Example Datasets
-   :maxdepth: 1
-   :hidden:
  
