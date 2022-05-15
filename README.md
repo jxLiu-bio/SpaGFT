@@ -36,6 +36,12 @@ scipy==1.8.0
 
 The virtual environment is recommended before installing ```SpaGFT```. You can
 achieve this step easily by ```annconda```. [https://www.anaconda.com/]
+
+If you do not have conda please install Miniconda first:
+cd /path/to/software
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+
 ```shell
 conda create -n spagft python==3.8
 conda activate spagft
@@ -43,22 +49,8 @@ conda activate spagft
 If you want to quit this virtual environment, just run ``` conda deacticate ```
 
 ### Install dependency packages
-Before installing ```SpaGFT``` formally, the following dependency packages are 
-required:
+Before intalling ```SpaGFT``` formally, the dependency packages should be installed.
 
-``` 
-kneed==0.7.0
-louvain==0.7.1
-matplotlib==3.5.2
-networkx==2.8
-numba==0.55.1
-numpy ==1.21.5
-pandas==1.4.2
-plotnine==0.8.0
-scanpy==1.9.1
-scikit-learn==1.0.2
-scipy==1.8.0
-```
 You can install all dependencies by:
 ```shell
 git clone https://github.com/jxLiu-bio/SpaGFT
@@ -69,3 +61,9 @@ pip install -r requirements.txt
 ```shell
 python setup.py install
 ```
+
+## Usage and Tutorials
+The tutorial of using ```SpaGFT``` could be found here https://spagft.readthedocs.io/en/latest/.
+
+Please report bugs via https://github.com/jxLiu-bio/SpaGFT/issues and ask any usage questions in https://github.com/jxLiu-bio/SpaGFT/discussions.
+
