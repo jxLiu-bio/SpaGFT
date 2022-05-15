@@ -469,7 +469,7 @@ def rank_gene_smooth(adata,
                      spatial_info=['array_row', 'array_col'],
                      normalize_lap=False,
                      filter_peaks=True,
-                     S=10,
+                     S=5,
                      cal_pval=True):
     """
     Rank genes to find spatially variable genes by graph Fourier transform.
@@ -503,6 +503,10 @@ def rank_gene_smooth(adata,
     filter_peaks: bool, optional
         For calculated vectors/signals in frequency/spectral domian, whether
         filter low peaks to stress the important peaks. The default is True.
+    S: int, optional
+        The sensitivity parameter in Kneedle algorithm. A large S will enable
+        more genes indentified as SVGs according to gft_score. The default is
+        5.
     cal_pval : bool, optional
         Whether need to calculate p val by mannwhitneyu. The default is False.
     Returns
