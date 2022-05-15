@@ -16,7 +16,7 @@ modules, enhance gene expression.
 
 - Identify tissue modules.
 
-- Impute gene expression.
+- Enhance gene expression.
 
 ## SpaGFT’s features
 - Hypothesis-free. _SpaGFT_ do not assume gene expressions obey any distributions
