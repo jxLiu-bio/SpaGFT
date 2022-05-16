@@ -18,7 +18,7 @@ Create a separated virtual envrionment
 conda create -n spagft_env python==3.8.0
 conda activate spagft_env
 ```
-If you want to quit this virtual environment, just run ``` conda deacticate ```
+If you want to quit this virtual environment, just run ``` conda deactivate ```
 
 ### Install dependency packages
 Before intalling ```SpaGFT``` formally, the dependency packages should be installed.
