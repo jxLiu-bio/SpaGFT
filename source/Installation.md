@@ -29,7 +29,7 @@ git clone https://github.com/jxLiu-bio/SpaGFT
 cd SpaGFT
 pip install -r requirements.txt
 ```
-### Install SpaGFT from GitHuba. 
+### Install SpaGFT from GitHub 
 ```shell
 python setup.py install
 ```
