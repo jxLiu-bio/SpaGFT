@@ -2,12 +2,12 @@
 
 ### Hardware Requirements
 ```SpaGFT``` is friendly to hardware. All functions in _SpaGFT_ need the minimum
-requriments of a CPU with 4 cores and 4G RAM. For large datasets, a large RAM is
+requirements of a CPU with 4 cores and 4G RAM. For large datasets, a large RAM is
 required to avoid memory overflow.
 
 ### OS requirements
-_SpaGFT_ can run on Windows, Linux, Mac OS. The package has been tested on 
-following systems:
+_SpaGFT_ can run on Windows, Linux, and Mac OS. The package has been tested on 
+the following systems:
 
 - Linux: Ubuntu 20.04
 
