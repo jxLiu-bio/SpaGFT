@@ -1,33 +1,27 @@
 ## About
-```SpaGFT``` is a python package to process spatial transcript omics data by
+```SpaGFT``` is a python package to process spatial transcriptomics data by
 graph Fourier transform. 
 
-Given count matrix of spatial transcriptomics data and corresponding spatial
-coordinate information, _SpaGFT_ transfer gene expression from spatial domain
-to frequency domain (also called spectral main), i.e. finding a new representation
+Given the count matrix of spatial transcriptomics data and corresponding spatial
+coordinate information, _SpaGFT_ transfer gene expression from the spatial domain
+to frequency domain (also called spectral main), i.e., finding a new representation
 method for genes which combined gene expression and spatial information 
-simultaneously. _SpaGFT_ can identify spatially variable genes, detect tissue 
-modules, enhance gene expression.
+simultaneously. _SpaGFT_ can transform complex gene expression patterns into simple but informative signals (frequency signals), identify spatially variable genes (SVG), detect tissue modules (TM), and enhance gene expression.
 
 ![](./images/SpaGFT_workflow.svg)
 
-### SpaGFT's functions
-- Detect spatially variable genes.
+### SpaGFT's analyses objects
+- Transform gene expression to frequency signals.
 
-- Identify tissue modules.
+- Identify SVG.
 
-- Enhance gene expression.
+- Characterize TM.
 
-### SpaGFT’s features
-- Hypothesis-free. _SpaGFT_ do not assume gene expressions obey any distributions
-or generated from some certain techniques. It can work normally on all spatial
-transcriptomics data due to the pure data-driven character.
+- Enhance gene expression (optional).
 
-- Running efficiently. _SpaGFT_ can run on PC directly and is running fast. For 
-usually Visium data, only a few seconds are consumed to detect spatially 
-variable genes. Besides, even for larger datasets, such as Slide-seq data and 
-HDST data, _SpaGFT_ can still obtain results in a shorter period of time.
+### SpaGFT's advantages
+- Hypothesis-free. _SpaGFT_ is a hypothesis-free graph Fourier transform framework (GFT) for SVG and TM identification from spatial transcriptomics data without assuming any spatial patterns. 
 
-- Bridging gene levels information with tissue level information. By identifying 
-spatially variable genes with similar spatial patterns in frequency domain, 
-_SpaGFT_ identifying tissue modules and can interpret them by molecular functions.
+- Computational effectiveness and efficiency. _SpaGFT_ can run on PC and still keep high accuracy and efficiency (time complexity is O(n^2)). For Visium data, it will take ~20 seconds to identify spatially variable genes. 
+
+- Characterizing TM from a gene-centric perspective. By selecting and grouping the low-frequency FM signals, SVGs with similar spatial patterns will be grouped into one cluster and form TM. Due to TM-associated SVGs, the gene signatures and biological functions of characterized TM can be further studied.
