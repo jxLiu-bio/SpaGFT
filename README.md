@@ -26,10 +26,10 @@ _SpaGFT_ can run on Windows, Linux, Mac os. The package has been tested on
 following systems:
 
 - Linux: Ubuntu 20.04
-- Windows: Windows 10, Windows 11
+- Windows: Windows 10
 
 ### Python Dependencies
-```SpaGFT``` requries python version >= 3.7.
+```SpaGFT``` requires python version >= 3.7.
 
 ``` 
 kneed==0.7.0
@@ -43,6 +43,7 @@ plotnine==0.8.0
 scanpy==1.9.1
 scikit-learn==1.0.2
 scipy==1.8.0
+gseapy==0.10.8
 ```
 ## Installation Guide
 ### Create a vitual environment 
@@ -65,27 +66,35 @@ conda activate spagft_env
 ```
 If you want to quit this virtual environment, just run ``` conda deacticate ```
 
-### Install dependency packages
-Before intalling ```SpaGFT``` formally, the dependency packages should be installed.
+## Install ```SpaGFT```
+### Approach 1: install ```SpaGFT``` by Pipy.
+You can install ```SpaGFT``` easily in this way by
+```
+pip install SpaGFT
+```
+You can also install ```SpaGFT``` via Github if there exists any problems.
+### Approcach 2: install ```SpaGFT``` via Github
+Before installing ```SpaGFT``` formally, the dependency packages should be installed.
 
 You can install all dependencies by:
 ```shell
-git clone https://github.com/jxLiu-bio/SpaGFT
+git clone https://github.com/OSU-BMBL/SpaGFT
 cd SpaGFT
 pip install -r requirements.txt
 ```
-### Install SpaGFT from GitHuba. 
+Next, run
 ```shell
 python setup.py install
 ```
 
-For using tutorial easily, you can install jupyter and add it this environment by
+Note that we recommend [jupyter](https://jupyter.org/) for interactive usage. It can be installed and configured by
 ```
-pip install jupyter
+conda install jupyter
 python -m ipykernel install --user --name=spagft_env --display-name=spagft_env
 ```
 
+
 ## Usage and Tutorials
-The tutorial of using ```SpaGFT``` could be found here https://spagft.readthedocs.io/en/latest/.
+The tutorial of ```SpaGFT``` could be found [here](https://spagft.readthedocs.io/en/latest/).
 
 

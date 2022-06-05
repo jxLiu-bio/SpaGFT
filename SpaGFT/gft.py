@@ -606,7 +606,7 @@ def rank_gene_smooth(adata,
     score_df = score_df.sort_values(by="gft_score", ascending=False) 
     score_df.loc[:, "svg_rank"] = range(1, score_df.shape[0] + 1)
     adata.var["svg_rank"] = score_df.reindex(adata.var_names).loc[:,"svg_rank"]
-    print("SVG ranking could be found in adata.obs['Rank']")
+    print("SVG ranking could be found in adata.var['svg_rank']")
     
     # Determine cutoff of gft_score
     from kneed import KneeLocator
@@ -618,11 +618,11 @@ def rank_gene_smooth(adata,
     score_df['cutoff_gft_score'] = False
     score_df['cutoff_gft_score'][:(magic.elbow + 1)] = True
     adata.var['cutoff_gft_score'] = score_df['cutoff_gft_score']
-    print("The spatially variable genes judged by gft_score could be found " +
-          "in adata.obs['cutoff_gft_score']")
+    print("""The spatially variable genes judged by gft_score could be found 
+          in adata.var['cutoff_gft_score']""")
     adata.varm['freq_domain_svg'] = frequency_array.transpose()
-    print("Gene signals in frequency domain could be found in " + 
-          "adata.varm['freq_domain_svg']")
+    print("""Gene signals in frequency domain when detect SVGs could be found
+          in adata.varm['freq_domain_svg']""")
     adata.uns['frequencies_svg'] = eigvals
     adata.uns['fms_low'] = eigvecs_s
     adata.uns['fms_high'] =eigvecs_l
@@ -769,8 +769,6 @@ def calculate_frequcncy_domain(adata,
                                 + ['high_spec_' + str(high) \
                                  for high in range(1, num_high_frequency + 1)])
     adata.varm['freq_domain'] = frequency_df.transpose()
-    print("Gene signals in frequency domain could be found in " + \
-         " adata.varm['freq_domain']")
     adata.uns['frequencies'] = eigvals
     
     tmp_adata = sc.AnnData(adata.varm['freq_domain'])
@@ -781,8 +779,67 @@ def calculate_frequcncy_domain(adata,
     if return_freq_domain:
         return frequency_df
 
+def freq2umap(adata, 
+             ratio_low_freq='infer', 
+             ratio_high_freq='infer', 
+             ratio_neighbors='infer',
+             spatial_info=['array_row', 'array_col'],
+             normalize_lap=False,
+             filter_peaks=False):
+    """
+    Obtain gene signals in frequency/spectral domain for all genes in 
+    adata.var_names and reduce dimension to 2 by UMAP.
+
+    Parameters
+    ----------
+    adata : AnnData
+        adata.X is the normalized count matrix. Besides, the spatial coordinat-
+        es could be found in adata.obs or adata.obsm.
+    ratio_low_freq : float | "infer", optional
+        The ratio_low_freq will be used to determine the number of the FMs with
+        low frequencies. Indeed, the ratio_low_freq * sqrt(number of spots) low
+        frequecy FMs will be calculated. If 'infer', the ratio_low_freq will be
+        set to 1.0. The default is 'infer'.
+    ratio_high_freq: float | 'infer', optional
+        The ratio_high_freq will be used to determine the number of the FMs with
+        high frequencies. Indeed, the ratio_high_freq * sqrt(number of spots) 
+        high frequecy FMs will be calculated. If 'infer', the ratio_high_freq 
+        will be set to 0. The default is 'infer'.
+    ratio_neighbors: float | 'infer', optional
+        The ratio_neighbors will be used to determine the number of neighbors
+        when contruct the KNN graph by spatial coordinates. Indeed, ratio_neig-
+        hobrs * sqrt(number of spots) / 2 indicates the K. If 'infer', the para
+        will be set to 1.0. The default is 'infer'.
+    spatial_info : list | tupple | str, optional
+        The column names of spaital coordinates in adata.obs_keys() or 
+        key in adata.obsm_keys. The default is ['array_row','array_col'].
+    normalize_lap : bool, optional
+        Whether need to normalize laplacian matrix. The default is false.
+    filter_peaks: bool, optional
+        For calculated vectors/signals in frequency/spectral domian, whether
+        filter low peaks to stress the important peaks. The default is False.
+
+    """ 
+    if 'svg_rank' not in adata.var.columns:
+        assert KeyError("adata.var['svg_rank'] is not available. Please run\
+                        SpaGFT.rank_gene_smooth(adata) firstly.")
+    tmp_adata = adata.copy()
+    if 'log1p' in adata.uns_keys():
+        tmp_adata.uns.pop('log1p')
+    tmp_adata.X = adata.raw[:, adata.var_names].X
+    sc.pp.log1p(tmp_adata)
+    calculate_frequcncy_domain(tmp_adata, 
+                               ratio_low_freq=ratio_low_freq,
+                               ratio_high_freq=ratio_high_freq,
+                               ratio_neighbors=ratio_neighbors,
+                               spatial_info=spatial_info,
+                               filter_peaks=filter_peaks,
+                               normalize_lap=normalize_lap,
+                               return_freq_domain=False)
+    adata.varm['gft_umap_svg'] = tmp_adata.varm['gft_umap']
+    
 def find_tissue_module(adata, 
-                       n_genes='infer', 
+                       svg_list='infer', 
                        ratio_fms='infer',
                        ratio_neighbors='infer',
                        spatial_info=['array_row', 'array_col'],
@@ -803,9 +860,9 @@ def find_tissue_module(adata,
        adata.X is the normalized count matrix. Besides, the spatial coordinat-
        es could be found in adata.obs or adata.obsm; the gft_score should be 
        provided in adata.obs.
-    n_genes : 'infer' | int, optional
-        Determine the number of SVGs used in clustering. If 'infer', SpaGFT 
-        will determine the number of SVGs automatically according to kneedle
+    svg_list : 'infer' | list, optional
+        Determine SVGs used in clustering. If 'infer', SpaGFT 
+        will determine the SVGs automatically according to kneedle
         algorithm.    
     ratio_fms : 'infer' | float optional
         The ratio_low_freq will be used to determine the number of the FMs with
@@ -863,12 +920,11 @@ def find_tissue_module(adata,
             ratio_fms = 2
         else:
             ratio_fms = 1
-    if n_genes == 'infer':
-        n_genes = adata.var_names[adata.var['cutoff_gft_score']].size
-    elif not isinstance(n_genes, int):
-        raise ValueError("n_genes should be int or 'infer'.")
     gene_score = adata.var.sort_values(by='svg_rank')
-
+    if svg_list == 'infer':
+        svg_list = adata.var[adata.var.cutoff_gft_score]\
+            [adata.var.qvalue<0.05].index.tolist()
+    
     tmp_adata = adata.copy()
     if 'log1p' in adata.uns_keys():
         tmp_adata.uns.pop('log1p')
@@ -883,14 +939,20 @@ def find_tissue_module(adata,
                                return_freq_domain=False)
     # Create new anndata to store freq domain information
     gft_adata = sc.AnnData(tmp_adata.varm['freq_domain'])
+    # sc.pp.neighbors(gft_adata, n_neighbors=n_neighbors, use_rep='X')
+    # sc.tl.umap(gft_adata)
+    # adata.varm['gft_umap_tm'] = gft_adata.obsm['X_umap']
+    # clustering
+    gft_adata = gft_adata[svg_list, :]
     sc.pp.neighbors(gft_adata, n_neighbors=n_neighbors, use_rep='X')
     sc.tl.umap(gft_adata)
-    adata.varm['gft_umap_tm'] = gft_adata.obsm['X_umap']
-    # clustering
-    gft_adata = gft_adata[gene_score.index[:n_genes], :]
-    sc.pp.neighbors(gft_adata, n_neighbors=n_neighbors, use_rep='X')
+    adata.uns['gft_umap_tm'] = pd.DataFrame(gft_adata.obsm['X_umap'],
+                                            index=gft_adata.obs.index,
+                                            columns=['UMAP_1', 'UMAP_2'])
     sc.tl.louvain(gft_adata, resolution=resolution, random_state=random_state,
                   **kwargs)
+    gft_adata.uns['gft_genes_tm'] = [str(eval(i_tm) + 1) for i_tm in \
+                             gft_adata.obs.louvain.tolist()]
     gft_adata.obs.louvain = [str(eval(i_tm) + 1) for i_tm in \
                              gft_adata.obs.louvain.tolist()]
     gft_adata.obs.louvain = pd.Categorical(gft_adata.obs.louvain)
@@ -905,15 +967,30 @@ def find_tissue_module(adata,
                     gft_adata.obs.louvain[gft_adata.obs.louvain==tm].index].X.sum(axis=1)
         pseudo_exp = np.ravel(pseudo_exp)
         tm_df['tm_' + str(tm)] = pseudo_exp
-    adata.obsm['tm_expression'] = tm_df.copy()
+    adata.obsm['tm_pseudo_expression'] = tm_df.copy()
     tm_df[tm_df < np.quantile(tm_df, q=0.85, axis=0)] = 0
     tm_df[tm_df >= np.quantile(tm_df, q=0.85, axis=0)] = 1
     tm_df = tm_df.astype(int)
     tm_df = tm_df.astype(str)
-    adata.obsm['tm_region'] = tm_df
+    adata.obsm['tm_binary'] = tm_df.copy()
+    # obtain freq signal
+    freq_signal_tm_df = pd.DataFrame(0, index=tm_df.columns, 
+                          columns=tmp_adata.varm['freq_domain'].columns)
+    for tm in all_tms:
+        tm_gene_list = gft_adata.obs.louvain[gft_adata.obs.louvain==tm].index
+        freq_signal = tmp_adata.varm['freq_domain'].loc[tm_gene_list,
+                                                        :].sum(axis=0)
+        freq_signal = freq_signal / sum(freq_signal)
+        freq_signal_tm_df.loc['tm_' + tm, :] = freq_signal
+    adata.uns['freq_signal_tm'] = freq_signal_tm_df
+    
+    
     # sub tm expression clustering
     tm_df = pd.DataFrame(index=adata.obs_names)
     adata.var['sub_TM'] = 'None'
+    #  sub tms frequency signals
+    freq_signal_subtm_df = pd.DataFrame(
+                          columns=tmp_adata.varm['freq_domain'].columns)
     for tm in all_tms:
         tm_gene_list = gft_adata.obs.louvain[gft_adata.obs.louvain==tm].index
         sub_gft_adata = gft_adata[tm_gene_list, :].copy()
@@ -925,17 +1002,28 @@ def find_tissue_module(adata,
         sub_gft_adata.obs.louvain = pd.Categorical(sub_gft_adata.obs.louvain)
         all_sub_tms = sub_gft_adata.obs.louvain.cat.categories
         for sub_tm in all_sub_tms:
+            # Obtain pseudo expression
             subTm_gene_list =sub_gft_adata.obs.louvain[sub_gft_adata.obs.louvain==sub_tm].index
             adata.var.loc[subTm_gene_list, 'sub_TM'] =  sub_tm
             pseudo_exp = tmp_adata[:, subTm_gene_list].X.sum(axis=1)
             pseudo_exp = np.ravel(pseudo_exp)
             tm_df['tm-' + str(tm) + "_subTm-" + str(sub_tm)] = pseudo_exp
-    adata.obsm['subTm_expression'] = tm_df.copy()
+            # Obtain frequency signals
+            freq_signal = tmp_adata.varm['freq_domain'].loc[subTm_gene_list,
+                                                            :].sum(axis=0)
+            freq_signal = freq_signal / sum(freq_signal)
+            freq_signal_subtm_df.loc['tm-' + str(tm) + "_subTm-" + str(sub_tm)
+                                     , :] = freq_signal
+            
+    adata.obsm['subTm_pseudo_expression'] = tm_df.copy()
     tm_df[tm_df < np.quantile(tm_df, q=quantile, axis=0)] = 0
     tm_df[tm_df >= np.quantile(tm_df, q=quantile, axis=0)] = 1
     tm_df = tm_df.astype(int)
     tm_df = tm_df.astype(str)
-    adata.obsm['subTm_region'] = tm_df
+    adata.obsm['subTm_binary'] = tm_df.copy()
+    adata.uns['freq_signal_subTM'] = freq_signal_subtm_df.copy()
+    
+    
 
         
     

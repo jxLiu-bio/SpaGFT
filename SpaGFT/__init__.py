@@ -3,3 +3,4 @@ from .gft import rank_gene_smooth, calculate_frequcncy_domain, \
 from .plot import scatter_gene_distri
 
 __all__ = ['plot', 'gft']
+__version__ = '0.1.2'
