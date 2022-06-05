@@ -15,7 +15,7 @@ Given gene expression matrix that consists $n$ spots as well as their spatial co
 
 </p>
 
-## System requirments
+## System Requirments
 ### Hardware Requirements
 ```SpaGFT``` is friendly to hardware. All functions in _SpaGFT_ need the minimum
 requriments of a CPU with 4 cores and 4G RAM. For large datasets, a large RAM is
