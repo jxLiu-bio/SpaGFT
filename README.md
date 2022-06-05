@@ -73,7 +73,7 @@ You can install ```SpaGFT``` easily in this way by
 pip install SpaGFT
 ```
 You can also install ```SpaGFT``` via Github if there exists any problems.
-### Approcach 2: install ```SpaGFT``` via Github
+### Approach 2: install ```SpaGFT``` via Github
 Before installing ```SpaGFT``` formally, the dependency packages should be installed.
 
 You can install all dependencies by:
