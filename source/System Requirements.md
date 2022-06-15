@@ -10,9 +10,6 @@ _SpaGFT_ can run on Windows, Linux, and Mac OS. The package has been tested on
 the following systems:
 
 - Linux: Ubuntu 20.04
-``` diff
-- **to-be-added after Qi and Shuli testing**
-```
 
 ### Python Dependencies
 ```SpaGFT``` requries python version >= 3.7.
