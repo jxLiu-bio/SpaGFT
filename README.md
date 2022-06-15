@@ -48,8 +48,8 @@ gseapy==0.10.8
 ## Installation Guide
 ### Create a vitual environment 
 
-The virtual environment is recommended before installing ```SpaGFT```. You can
-achieve this step easily by ```annconda```. [https://www.anaconda.com/]
+The virtual environment is recommended before installing ```SpaGFT```. Users can
+install ```annconda``` by following this tutorial. [https://www.anaconda.com/]
 
 If users do not have conda please install Miniconda first:
 
