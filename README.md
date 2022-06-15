@@ -51,7 +51,7 @@ gseapy==0.10.8
 The virtual environment is recommended before installing ```SpaGFT```. You can
 achieve this step easily by ```annconda```. [https://www.anaconda.com/]
 
-If you do not have conda please install Miniconda first:
+If users do not have conda please install Miniconda first:
 
 ```
 cd /path/to/software
@@ -64,19 +64,19 @@ Create a separated virtual envrionment
 conda create -n spagft_env python==3.8.0
 conda activate spagft_env
 ```
-If you want to quit this virtual environment, just run ``` conda deacticate ```
+If users want to quit this virtual environment, just run ``` conda deacticate ```
 
 ## Install ```SpaGFT```
-### Approach 1: install ```SpaGFT``` by Pipy.
-You can install ```SpaGFT``` easily in this way by
+### Approach 1: install ```SpaGFT``` by `pip`.
+Users can install ```SpaGFT``` easily in this way by
 ```
 pip install SpaGFT
 ```
-You can also install ```SpaGFT``` via Github if there exists any problems.
+Users can also install ```SpaGFT``` via Github if there exists any problems.
 ### Approach 2: install ```SpaGFT``` via Github
 Before installing ```SpaGFT``` formally, the dependency packages should be installed.
 
-You can install all dependencies by:
+Users can install all dependencies by:
 ```shell
 git clone https://github.com/OSU-BMBL/SpaGFT
 cd SpaGFT
