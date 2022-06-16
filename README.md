@@ -29,7 +29,7 @@ required to avoid memory overflow.
 _SpaGFT_ can run on Windows, Linux, Mac os. The package has been tested on 
 the following systems:
 
-- Linux: Ubuntu 20.04
+- Linux: Ubuntu 20.04 (recommend)
 - Windows: Windows 10
 
 ### Python Dependencies
