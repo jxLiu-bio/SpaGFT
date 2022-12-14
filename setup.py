@@ -17,5 +17,18 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.8",
+    install_requires=["kneed==0.7.0"
+                  "louvain==0.7.1"
+                  "matplotlib==3.5.2"
+                  "networkx==2.8"
+                  "numba==0.55.1"
+                  "numpy==1.21.5"
+                  "pandas==1.4.2"
+                  "plotnine==0.8.0"
+                  "scanpy==1.9.1"
+                  "scikit-learn==1.0.2"
+                  "scipy==1.8.0"
+                  "gseapy==0.10.8"
+                  "igraph==1.9.10"]
 )
