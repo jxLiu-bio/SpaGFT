@@ -50,7 +50,7 @@ scanpy==1.9.1
 scikit-learn==1.0.2
 scipy==1.8.0
 gseapy==0.10.8
-igraph==1.9.10
+igraph==0.9.10
 ```
 
 ## Installation Guide
