@@ -26,6 +26,7 @@ If you want to quit this virtual environment, just run ``` conda deactivate ```
 You can install ```SpaGFT``` easily in this way by
 ```
 pip install SpaGFT
+pip install igraph==0.9.10
 ```
 You can also install ```SpaGFT``` via Github if there exists any problems.
 ##### 3.2 Approach 2: install ```SpaGFT``` via Github
