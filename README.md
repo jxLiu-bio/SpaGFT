@@ -4,10 +4,11 @@
 
 </p>
 
-# SpaGFT : Graph fourier transformer for representation, analysis, and interpretation of spatially variable genes
+# SpaGFT: Graph fourier transformer for representation, analysis, and interpretation of spatially variable genes
+
 <img src="https://img.shields.io/badge/Platform-Linux-green"> <img src="https://img.shields.io/badge/Language-python3-green"> <img src="https://img.shields.io/badge/License-MIT-green"><img src="https://img.shields.io/badge/notebooks-passing-green"><img src="https://img.shields.io/badge/docs-passing-green">
 
-Given gene expression matrix that consists $n$ spots as well as their spatial coordinates and $n$ genes, ```SpaGFT``` can detect spatially variable genes (SVG) and identify tissue modules which determined by a group of SVGs with similar spatial patterns.
+Given a gene expression matrix that consists of $n$ spots as well as their spatial coordinates and $n$ genes, ```SpaGFT``` can detect spatially variable genes (SVG) and identify tissue modules that are determined by a group of SVGs with similar spatial patterns.
 
 <p align="center">
 
@@ -16,22 +17,27 @@ Given gene expression matrix that consists $n$ spots as well as their spatial co
 </p>
 
 ## System Requirments
+
 ### Hardware Requirements
+
 ```SpaGFT``` is friendly to hardware. All functions in _SpaGFT_ need the minimum
-requriments of a CPU with 4 cores and 4G RAM. For large datasets, a large RAM is
+requirements of a CPU with 4 cores and 4G RAM. For large datasets, a large RAM is
 required to avoid memory overflow.
 
 ### OS requirements
-_SpaGFT_ can run on Windows, Linux, Mac os. The package has been tested on 
-following systems:
 
-- Linux: Ubuntu 20.04
+_SpaGFT_ can run on Windows, Linux, Mac os. The package has been tested on 
+the following systems:
+
+- Linux: Ubuntu 20.04 (recommend)
 - Windows: Windows 10
 
 ### Python Dependencies
+
 ```SpaGFT``` requires python version >= 3.7.
 
-``` 
+```{txt}
+
 kneed==0.7.0
 louvain==0.7.1
 matplotlib==3.5.2
@@ -44,57 +50,71 @@ scanpy==1.9.1
 scikit-learn==1.0.2
 scipy==1.8.0
 gseapy==0.10.8
+igraph==0.9.10
 ```
+
 ## Installation Guide
-### Create a vitual environment 
 
-The virtual environment is recommended before installing ```SpaGFT```. You can
-achieve this step easily by ```annconda```. [https://www.anaconda.com/]
+### Create a virtual environment
 
-If you do not have conda please install Miniconda first:
+The virtual environment is recommended before installing ```SpaGFT```. Users can
+install ```anaconda``` by following this tutorial. [https://www.anaconda.com/]
 
-```
+If users do not have conda please install Miniconda first:
+
+```bash
 cd /path/to/software
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 ```
 
-Create a separated virtual envrionment
+Create a separated virtual environment
+
 ```shell
 conda create -n spagft_env python==3.8.0
 conda activate spagft_env
 ```
-If you want to quit this virtual environment, just run ``` conda deacticate ```
+
+If users want to quit this virtual environment, just run ``` conda deactivate ```
 
 ## Install ```SpaGFT```
-### Approach 1: install ```SpaGFT``` by Pipy.
-You can install ```SpaGFT``` easily in this way by
-```
+
+### Approach 1: install ```SpaGFT``` by `pip`
+
+Users can install ```SpaGFT``` easily in this way by
+
+```bash
 pip install SpaGFT
+pip install igraph==0.9.10
 ```
-You can also install ```SpaGFT``` via Github if there exists any problems.
+
+Users can also install ```SpaGFT``` via Github if there exists any problems.
+
 ### Approach 2: install ```SpaGFT``` via Github
+
 Before installing ```SpaGFT``` formally, the dependency packages should be installed.
 
-You can install all dependencies by:
-```shell
+Users can install all dependencies by:
+
+```bash
 git clone https://github.com/OSU-BMBL/SpaGFT
 cd SpaGFT
 pip install -r requirements.txt
 ```
+
 Next, run
-```shell
+
+```bash
 python setup.py install
 ```
 
 Note that we recommend [jupyter](https://jupyter.org/) for interactive usage. It can be installed and configured by
-```
+
+```bash
 conda install jupyter
 python -m ipykernel install --user --name=spagft_env --display-name=spagft_env
 ```
 
-
 ## Usage and Tutorials
+
 The tutorial of ```SpaGFT``` could be found [here](https://spagft.readthedocs.io/en/latest/).
-
-

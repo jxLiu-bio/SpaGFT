@@ -3,7 +3,7 @@
 ### Configure the virtual environment 
 
 The virtual environment is recommended before installing ```SpaGFT```. Users can
-configure the virtual environment by [annconda](https://www.anaconda.com/).
+configure the virtual environment by [anaconda](https://www.anaconda.com/).
 
 #### 1. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html)[optional]
 If the user does not install conda, please install a free minimal installer for conda (named Miniconda):
@@ -14,7 +14,7 @@ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 ```
 
-#### 2. Create the virtual envrionment
+#### 2. Create the virtual environment
 ```shell
 conda create -n spagft_env python==3.8.0
 conda activate spagft_env
@@ -26,6 +26,7 @@ If you want to quit this virtual environment, just run ``` conda deactivate ```
 You can install ```SpaGFT``` easily in this way by
 ```
 pip install SpaGFT
+pip install igraph==0.9.10
 ```
 You can also install ```SpaGFT``` via Github if there exists any problems.
 ##### 3.2 Approach 2: install ```SpaGFT``` via Github

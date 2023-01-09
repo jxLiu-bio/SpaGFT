@@ -6,13 +6,7 @@ requirements of a CPU with 4 cores and 4G RAM. For large datasets, a large RAM i
 required to avoid memory overflow.
 
 ### OS requirements
-_SpaGFT_ can run on Windows, Linux, and Mac OS. The package has been tested on 
-the following systems:
-
-- Linux: Ubuntu 20.04
-``` diff
-- **to-be-added after Qi and Shuli testing**
-```
+_SpaGFT_ can run on Windows, Linux, and Mac OS. We suggested analyzing users' data on ***Linux: Ubuntu 20.04*** to reproduce results from our paper.
 
 ### Python Dependencies
 ```SpaGFT``` requries python version >= 3.7.
