@@ -17,7 +17,7 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    References
    Release
    Contact
-   spatial/ mouse_brain_coronal
+   spatial/mouse_brain_coronal
    spatial/lymphnode_tutorial
    
 
