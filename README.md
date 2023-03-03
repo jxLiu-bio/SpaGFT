@@ -85,7 +85,6 @@ Users can install ```SpaGFT``` easily in this way by
 
 ```bash
 pip install SpaGFT
-pip install igraph==0.9.10
 ```
 
 Users can also install ```SpaGFT``` via Github if there exists any problems.
