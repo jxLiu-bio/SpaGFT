@@ -12,7 +12,7 @@ Given a gene expression matrix that consists of $n$ spots as well as their spati
 
 <p align="center">
 
-   <img src="https://github.com/jxLiu-bio/SpaGFT/blob/master/source/images/SpaGFT_workflow.svg?raw=True" width="1000">
+   <img src="https://user-images.githubusercontent.com/26455910/226082582-cd77af6b-13b2-4f8c-9003-d96f0a28bd4d.svg" width="1000">
 
 </p>
 
