@@ -1,6 +1,6 @@
 <p align="center">
 
-   <img src="https://github.com/jxLiu-bio/SpaGFT/blob/master/source/images/SpaGFT_logo.svg?raw=True" width="200">
+   <img src="https://user-images.githubusercontent.com/26455910/227746120-9bf87226-7320-49c3-8108-8ed09763cdf8.png" width="700">
 
 </p>
 
