@@ -4,7 +4,7 @@
 
 </p>
 
-# Spatial omics representation and functional tissue module inference using graph Fourier transform
+# SpaGFT: Spatial omics representation and functional tissue module inference using graph Fourier transform
 
 
 <img src="https://img.shields.io/badge/Platform-Linux-green"> <img src="https://img.shields.io/badge/Language-python3-green"> <img src="https://img.shields.io/badge/License-MIT-green"><img src="https://img.shields.io/badge/notebooks-passing-green"><img src="https://img.shields.io/badge/docs-passing-green">
