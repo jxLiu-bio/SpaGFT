@@ -669,20 +669,24 @@ def tm_overlapped_scatter_tm_id_card(adata,
     tm_overlapped_value = np.array(tm_overlapped_value)
     tm_2_value = np.array(tm_2_value)
     tm_blank_value = np.array(tm_blank_value)
-    scatter_1 = ax.scatter(tm_1_value[:, 0], tm_1_value[:, 1],
-                           marker=marker, s=radius, c=tm_1_color)
-    scatter_2 = ax.scatter(tm_2_value[:, 0], tm_2_value[:, 1],
-                           marker=marker, s=radius, c=tm_2_color)
-    scatter_overlap = ax.scatter(tm_overlapped_value[:, 0],
-                                 tm_overlapped_value[:, 1],
-                                 marker=marker,
-                                 s=radius,
-                                 c=overlapped_color)
-    scatter_blank = ax.scatter(tm_blank_value[:, 0],
-                               tm_blank_value[:, 1],
-                               marker=marker,
-                               s=radius,
-                               c="lightgray")
+    if len(tm_1_value)!=0:
+        scatter_1 = ax.scatter(tm_1_value[:, 0], tm_1_value[:, 1],
+                               marker=marker, s=radius, c=tm_1_color)
+    if len(tm_2_value)!=0:
+        scatter_2 = ax.scatter(tm_2_value[:, 0], tm_2_value[:, 1],
+                               marker=marker, s=radius, c=tm_2_color)
+    if len(tm_overlapped_value)!=0:
+        scatter_overlap = ax.scatter(tm_overlapped_value[:, 0],
+                                     tm_overlapped_value[:, 1],
+                                     marker=marker,
+                                     s=radius,
+                                     c=overlapped_color)
+    if len(tm_blank_value)!=0:
+        scatter_blank = ax.scatter(tm_blank_value[:, 0],
+                                   tm_blank_value[:, 1],
+                                   marker=marker,
+                                   s=radius,
+                                   c="lightgray")
     ax.minorticks_on()
     ax.yaxis.set_tick_params(labelsize=10)
     ax.xaxis.set_tick_params(labelsize=10)
@@ -1012,7 +1016,10 @@ def scatter_tm(adata,
     if isinstance(tm, str):
         tm_value = [int(x) for x in list(adata.obsm["tm_binary"][tm].values)]
         fig, ax = plt.subplots()
-        cmap_tm=ListedColormap(["#b4b4b4",tm_color])
+        if isinstance(tm_color, str):
+            cmap_tm=ListedColormap(["#b4b4b4",tm_color])
+        elif isinstance(tm_color, list) and len(tm_color)>0:
+            cmap_tm=ListedColormap(["#b4b4b4",tm_color[0]])
         
         plt.title(tm)
         if size != None:
@@ -1055,7 +1062,12 @@ def scatter_tm(adata,
             ax = fig.add_subplot(gs[index // 4, index % 4])        
             tm_value = [int(x) for x in \
                         list(adata.obsm["tm_binary"][value].values)]
-            cmap_tm=ListedColormap(["#b4b4b4",tm_color])
+            if isinstance(tm_color, str):
+                
+                cmap_tm=ListedColormap(["#b4b4b4",tm_color])
+            elif isinstance(tm_color, list) and len(tm_color)>index:
+                cmap_tm=ListedColormap(["#b4b4b4",tm_color[index]])
+                
             
             plt.title(value)
             if size != None:
@@ -1426,12 +1438,16 @@ def draw_tissue_module_id_card(adata,
                                svg_list,
                                tm,
                                deconvolution_key='cell_type_proportion',
+                               tm_overlap_show=None,
+                               tm_color=["#FF6879","#63a365","#a0a363","#5c5c5c"],
                                spatial_info=['array_row', 'array_col'],
+                               organism='Mouse',
                                shape='h',
                                dpi=350, 
                                size=[7, 0.8],
                                return_fig=False,
-                               save_path=None):
+                               save_path=None,
+                               ):
     '''
     Plot the details of a tissue module to generate a TM ID CARD.
 
@@ -1450,6 +1466,8 @@ def draw_tissue_module_id_card(adata,
     spatial_info : str or list, optional
         The spatial information key in adata.obsm or columns in adata.obs. 
         The default is ['array_row', 'array_col'].
+    organism: str
+        Mouse or human. The default is 'Mouse'.
     shape : str
         The shape of the spots.
         The default is 'h'.
@@ -1472,13 +1490,16 @@ def draw_tissue_module_id_card(adata,
     '''
     if 'tm-' in tm:
         tm = tm.replace('tm-', '')
-    gene_df = adata.var.loc[svg_list, :]
-
+    if 'tm_' in tm:
+        tm = tm.replace('tm_', '')
+    gene_df = adata.var.copy()
     tm_total = [str(ind) for ind in range(1,
-                                1 + np.unique(gene_df['tissue_module']).size)]
+                                  np.unique(gene_df['tissue_module']).size)]
     fig = plt.figure(dpi=dpi,
                      constrained_layout=True,
                      figsize=(12, 14))
+    all_tm_genes = gene_df.loc[gene_df['tissue_module'] == tm,
+                               :].index.tolist()
     gene_df = gene_df.loc[svg_list, :]
     tm_gene_list = gene_df.loc[gene_df['tissue_module'] == tm,
                                :].index.tolist()
@@ -1489,7 +1510,7 @@ def draw_tissue_module_id_card(adata,
                                          rowspan=4)
     tm_spatial_map_scatter_tm_id_card(adata,
                                      f"tm_{tm}",
-                                     "#FF6879",
+                                     tm_color[0],
                                      radius=size[0],
                                      title=None,
                                      ax=ax_SpaMap_scatter,
@@ -1523,9 +1544,10 @@ def draw_tissue_module_id_card(adata,
     ax_enhSVGs_title.get_xaxis().set_visible(False)
     ax_enhSVGs_title.get_yaxis().set_visible(False)
     # Enhanced SVGs plot scatters
-    for index in range(min(8, len(tm_gene_list))):
-        ax = plt.subplot2grid((12, 14), (1 + 2 * (index % 4), 
-                                         6 + 2 * (index // 4)),
+    
+    for index in range(min(6, len(tm_gene_list))):
+        ax = plt.subplot2grid((12, 14), (1 + 2 * (index % 3), 
+                                         6 + 2 * (index // 3)),
                               colspan=2, rowspan=2)
 
         scatter_SVGs_distri_tm_id_card(adata,
@@ -1540,6 +1562,7 @@ def draw_tissue_module_id_card(adata,
 
     # *************************************************
     # Overlapped TMs plot start
+    
     tm_overlapper_max = {
         "tm": None,
         "ob_sum": None
@@ -1548,75 +1571,107 @@ def draw_tissue_module_id_card(adata,
         "tm": None,
         "ob_sum": None
     }
-    for value in tm_total:
-        v1 = [int(i) for i in adata.obsm["tm_binary"][f"tm_{value}"].values]
-        v2 = [int(i) for i in adata.obsm["tm_binary"][f"tm_{tm}"].values]
-        current_value = [i for i in list(map(lambda x: x[0] + x[1],
-                                             zip(v2, v1))) if i == 2]
-        current_value = len(current_value)
-        if tm_overlapper_max["tm"] == None and value != tm:
-            tm_overlapper_max["tm"] = value
-            tm_overlapper_max["ob_sum"] = current_value
-
-        elif tm_overlapper_min["tm"] == None and value != tm:
-            tm_overlapper_min["tm"] = value
-            tm_overlapper_min["ob_sum"] = current_value
-        elif value != tm:
-            if tm_overlapper_min["ob_sum"] > current_value:
-                tm_overlapper_min["ob_sum"] = current_value
-                tm_overlapper_min["tm"] = value
-            if tm_overlapper_max["ob_sum"] < current_value:
-                tm_overlapper_max["ob_sum"] = current_value
+    if isinstance(tm_overlap_show, str):
+        tm_overlap_show = [tm_overlap_show]
+    if tm_overlap_show is None:
+        for value in tm_total:
+            v1 = [int(i) for i in adata.obsm["tm_binary"][f"tm_{value}"].values]
+            v2 = [int(i) for i in adata.obsm["tm_binary"][f"tm_{tm}"].values]
+            current_value = [i for i in list(map(lambda x: x[0] + x[1],
+                                                 zip(v2, v1))) if i == 2]
+            current_value = len(current_value)
+            if tm_overlapper_max["tm"] == None and value != tm:
                 tm_overlapper_max["tm"] = value
-    ax_Overlapped_scatter_1 = plt.subplot2grid((12, 14), (5, 1), 
+                tm_overlapper_max["ob_sum"] = current_value
+    
+            elif tm_overlapper_min["tm"] == None and value != tm:
+                tm_overlapper_min["tm"] = value
+                tm_overlapper_min["ob_sum"] = current_value
+            elif value != tm:
+                if tm_overlapper_min["ob_sum"] > current_value:
+                    tm_overlapper_min["ob_sum"] = current_value
+                    tm_overlapper_min["tm"] = value
+                if tm_overlapper_max["ob_sum"] < current_value:
+                    tm_overlapper_max["ob_sum"] = current_value
+                    tm_overlapper_max["tm"] = value
+    else:
+        if isinstance(tm_overlap_show, str):
+            tm_overlapper_max = {
+                "tm": tm_overlap_show,
+                "ob_sum": None
+            }
+        elif isinstance(tm_overlap_show, list):
+            
+            if len(tm_overlap_show)<2 and len(tm_overlap_show)>0:
+                tm_overlapper_max = {
+                    "tm": tm_overlap_show[0],
+                    "ob_sum": None
+                }
+            elif len(tm_overlap_show)>1:
+                
+                tm_overlapper_max = {
+                    "tm": tm_overlap_show[0],
+                    "ob_sum": None
+                }
+                tm_overlapper_min = {
+                    "tm": tm_overlap_show[1],
+                    "ob_sum": None
+                }
+
+    if tm_overlapper_max["tm"] is not None:
+        ax_Overlapped_scatter_1 = plt.subplot2grid((12, 14), (5, 1), 
                                                colspan=2,
                                                rowspan=2)
-    tm_overlapped_scatter_tm_id_card(adata,
-                                     tm,
-                                     tm_overlapper_max["tm"],
-                                     tm_1_color="#FF6879",
-                                     tm_2_color="Green",
-                                     overlapped_color="Yellow",
-                                     title="Overlapped TMs",
-                                     radius=size[1],
-                                     spatial_info=spatial_info,
-                                     marker=shape,
-                                     ax=ax_Overlapped_scatter_1)
-    ax_Overlapped_scatter_2 = plt.subplot2grid((12, 14), (7, 1),
+        tm_overlapped_scatter_tm_id_card(adata,
+                                         tm,
+                                         tm_overlapper_max["tm"],
+                                         tm_1_color=tm_color[0],
+                                         tm_2_color=tm_color[1],
+                                         overlapped_color=tm_color[3],
+                                         title="Overlapped TMs",
+                                         radius=size[1],
+                                         spatial_info=spatial_info,
+                                         marker=shape,
+                                         ax=ax_Overlapped_scatter_1)
+    
+    if tm_overlapper_min["tm"] is not None:
+        ax_Overlapped_scatter_2 = plt.subplot2grid((12, 14), (7, 1),
                                                colspan=2, rowspan=2)
-    tm_overlapped_scatter_tm_id_card(adata,
-                                     tm,
-                                     tm_overlapper_min["tm"],
-                                     tm_1_color="#FF6879",
-                                     tm_2_color="Green",
-                                     overlapped_color="Yellow",
-                                     title="Overlapped TMs",
-                                     radius=size[1],
-                                     marker=shape,
-                                     spatial_info=spatial_info,
-                                     ax=ax_Overlapped_scatter_2)
-    ax_Overlapped_scatter_1_TM = plt.subplot2grid((12, 14), (5, 3), 
+        tm_overlapped_scatter_tm_id_card(adata,
+                                         tm,
+                                         tm_overlapper_min["tm"],
+                                         tm_1_color=tm_color[0],
+                                         tm_2_color=tm_color[2],
+                                         overlapped_color=tm_color[3],
+                                         title="Overlapped TMs",
+                                         radius=size[1],
+                                         marker=shape,
+                                         spatial_info=spatial_info,
+                                         ax=ax_Overlapped_scatter_2)
+    
+    if tm_overlapper_max['tm'] is not None:
+        ax_Overlapped_scatter_1_TM = plt.subplot2grid((12, 14), (5, 3), 
                                                   colspan=2, rowspan=2)
-
-    tm_spatial_map_scatter_tm_id_card(adata,
-                                      f"tm_{str(tm_overlapper_max['tm'])}",
-                                      "#FF6879",
-                                      f"TM {tm_overlapper_max['tm']}",
-                                      ax=ax_Overlapped_scatter_1_TM,
-                                      radius=size[1],
-                                      shape=shape,
-                                      spatial_info=spatial_info)
-    ax_Overlapped_scatter_2_TM = plt.subplot2grid((12, 14), (7, 3), 
-                                                  colspan=2, rowspan=2)
-
-    tm_spatial_map_scatter_tm_id_card(adata,
-                                      f"tm_{str(tm_overlapper_min['tm'])}",
-                                      "#FF6879",
-                                      f"TM {tm_overlapper_min['tm']}",
-                                      ax=ax_Overlapped_scatter_2_TM,
-                                      radius=size[1],
-                                      shape=shape,
-                                      spatial_info=spatial_info)
+        tm_spatial_map_scatter_tm_id_card(adata,
+                                          f"tm_{str(tm_overlapper_max['tm'])}",
+                                          tm_color[1],
+                                          f"TM {tm_overlapper_max['tm']}",
+                                          ax=ax_Overlapped_scatter_1_TM,
+                                          radius=size[1],
+                                          shape=shape,
+                                          spatial_info=spatial_info)
+    
+    if tm_overlapper_min['tm'] is not None:
+        ax_Overlapped_scatter_2_TM = plt.subplot2grid((12, 14), (7, 3), 
+                                                      colspan=2, rowspan=2)
+        tm_spatial_map_scatter_tm_id_card(adata,
+                                          f"tm_{str(tm_overlapper_min['tm'])}",
+                                          tm_color[2],
+                                          f"TM {tm_overlapper_min['tm']}",
+                                          ax=ax_Overlapped_scatter_2_TM,
+                                          radius=size[1],
+                                          shape=shape,
+                                          spatial_info=spatial_info)
     # Overlapped TMs plot end
     # *************************************************
 
@@ -1647,15 +1702,15 @@ def draw_tissue_module_id_card(adata,
     # *************************************************
     # SVG functional enrichments plot start
     import gseapy as gp
-    enr = gp.enrichr(gene_list=tm_gene_list,
+    enr = gp.enrichr(gene_list=all_tm_genes,
                      gene_sets=['BioPlanet_2019',
                                 'GO_Biological_Process_2021',
                                 'ChEA_2016'],
-                     organism='Human',
+                     organism=organism,
                      description='Tissue_module',
                      outdir='tmp/enrichr_kegg',
                      no_plot=False,
-                     cutoff=0.5
+                     cutoff=0.8
                      )
 
 
@@ -1665,7 +1720,10 @@ def draw_tissue_module_id_card(adata,
     from gseapy.plot import barplot
     GO_Biological_Process_file = "./tmp/enrichr_kegg/GO_Biological_Process"
     barplot(enr.results[enr.results.Gene_set == 'GO_Biological_Process_2021'],
-            top_term=10, ofname=GO_Biological_Process_file, )
+            top_term=5, 
+            column='P-value',
+            ofname=GO_Biological_Process_file,
+            color=tm_color[0])
     from PIL import Image
     img = Image.open(GO_Biological_Process_file + ".png", )
     GO_Biological_Processn_plot.imshow(img)

@@ -7,8 +7,12 @@ from sklearn import preprocessing
 from SpaGFT.utilis import get_laplacian_mtx, kneed_select_values
 from SpaGFT.utilis import test_significant_freq, get_overlap_cs_core
 from sklearn.cluster import KMeans
+import os
 
+
+# os.environ["TF_CPP_MIN_LOG_LEVEL"] = '2'
 warnings.filterwarnings("ignore")
+sc.settings.verbosity = 1
 
 
 def low_pass_enhancement(adata,
@@ -771,11 +775,14 @@ def identify_tissue_module(adata,
         overlap_scores = {}
         # Iterate through the list of resolution and calculate the 
         # clustering results
-        for resolution_index, resolution_value in enumerate(resolution):
+        from tqdm import tqdm
+        resolution_tqdm = tqdm(resolution, desc='resolution')
+        # for resolution_index, resolution_value in enumerate(resolution):
+        for resolution_index, resolution_value in enumerate(resolution_tqdm):
             gft_adata_current = gft_adata.copy()
             sc.tl.louvain(gft_adata_current, resolution=resolution_value,
                           random_state=random_state, **kwargs,
-                          key_added='louvain')
+                          key_added='louvain', )
 
             gft_adata_current.obs.louvain = [str(eval(i_tm) + 1) for i_tm in \
                                        gft_adata_current.obs.louvain.tolist()]
@@ -812,8 +819,9 @@ def identify_tissue_module(adata,
                 
             # Correct cosine similarity of overlap for clustering results
             overlap_cs_score = get_overlap_cs_core(tm_df_current.values.T)
-            print("""resolution: %.3f;  """%resolution_value +\
-                  """score: %.4f"""%overlap_cs_score)
+            # print("""resolution: %.3f;  """%resolution_value +\
+            #       """score: %.4f"""%overlap_cs_score)
+            resolution_tqdm.set_postfix(score=overlap_cs_score)
             overlap_scores['res_' + '%.3f'%resolution_value] = \
                 np.round(overlap_cs_score * 1e5) / 1e5
             # select the optimal resolution
@@ -822,6 +830,7 @@ def identify_tissue_module(adata,
                 count_tms_select_cs_score = overlap_cs_score
                 best_resolution = resolution_value
             resolution = best_resolution
+            # print("Used resolution: \t", resolution)
 
     # Next, clustering genes for given resolution
     sc.tl.louvain(gft_adata, resolution=resolution, random_state=random_state,
