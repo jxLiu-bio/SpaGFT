@@ -6,7 +6,7 @@ to frequency domain (also called spectral domain), i.e., finding a new topologic
 method of genes which combined gene expression and spatial information of spots
 simultaneously. _SpaGFT_ can transform complex spatial patterns into one-dimensional, simple but informative Fourier Coefficients (FCs). In this way, several tasks can be achieved by analyzing FCs, include identifying spatially variable genes (SVG), detecting tissue modules (TM), and enhancing gene expression.
 
-![](./images/GFT workflow-details.jpg)
+![](./images/overall design.tif)
 
 ### SpaGFT's functions
 - Transform gene expression to FCs.
