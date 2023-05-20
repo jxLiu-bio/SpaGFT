@@ -1,3 +1,8 @@
+# Repo-specific
+data/
+results/
+tmp/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -129,3 +134,21 @@ dmypy.json
 .pyre/
 .Rhistory
 source/spatial/lymph_node.ipynb
+
+# Linux
+*~
+
+# macOS
+.DS_Store
+._*
+
+# Windows
+Thumbs.db
+[Dd]esktop.ini
+*.lnk
+
+# Vscode
+.vscode/
+
+# PyCharm
+.idea/
