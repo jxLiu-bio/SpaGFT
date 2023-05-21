@@ -363,6 +363,7 @@ def _umap_svg_cluster(adata,
                      size=None,
                      cmap='magma', 
                      spatial_info=['array_row', 'array_col'],
+                     colors=['#CA1C1C','#CCCCCC'],
                      coord_ratio=1, 
                      return_plot=True):
     
@@ -1760,7 +1761,7 @@ def draw_tissue_module_id_card(adata,
     # plt.tight_layout()
     if save_path is not None:
         plt.savefig(f"{save_path}/tm_{tm}.png")
-    if os.path.exists("./tmp/enrichr_kegg"):
-        os.system("rm -r ./tmp/enrichr_kegg")
+    if os.path.exists("./tmp"):
+        os.system("rm -r ./tmp")
     if return_fig:
         return fig
