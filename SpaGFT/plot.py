@@ -38,7 +38,6 @@ def gene_freq_signal(adata,
         plt.ylim(0, y_max * 1.1)
         plt.xlim(0, freq_signal.size)
         plt.title("Gene: " + gene)
-        plt.show()
         if save_path !=None:
             plt.savefig(f"{save_path}")
         if return_fig:
@@ -72,7 +71,6 @@ def gene_freq_signal(adata,
         
         if save_path !=None:
             plt.savefig(f"{save_path}")
-        plt.show()
         if return_fig:
             return ax_list
 
@@ -115,7 +113,6 @@ def tm_freq_signal(adata,
             ax.get_yaxis().set_visible(False)
         if save_path !=None:
             plt.savefig(f"{save_path}")
-        plt.show()
         if return_fig:
             return ax
         
@@ -159,7 +156,6 @@ def tm_freq_signal(adata,
         
         if save_path != None:
             plt.savefig(f"{save_path}")
-        plt.show()
         if return_fig:
             return ax_list
 
@@ -183,7 +179,6 @@ def _subTm_freq_signal(adata, subTM,
     plt.ylim(y_range[0], y_range[1])
     plt.xlim(0, freq_signal.size)
     plt.title(subTM)
-    plt.show()
     if return_fig:
         return ax
     
@@ -246,7 +241,6 @@ def gene_signal_umap(adata,
     
     if save_path != None:
         plt.savefig(f"{save_path}")
-    plt.show()
     if return_fig:
         return fig
 
@@ -922,7 +916,6 @@ def scatter_gene(adata,
         
         if save_path != None:
             plt.savefig(save_path)
-        plt.show()
         if return_fig:
             return ax
 
@@ -963,7 +956,6 @@ def scatter_gene(adata,
             
             if save_path:
                 plt.savefig(save_path)
-            plt.show()
             if return_fig:
                 return ax_list
 
@@ -1044,7 +1036,6 @@ def scatter_tm(adata,
         
         if save_path:
             plt.savefig(f"{save_path}")
-        plt.show()
         if return_fig:
             return ax
     elif isinstance(tm, list) or isinstance(tm, np.ndarray):
@@ -1094,7 +1085,6 @@ def scatter_tm(adata,
         
         if save_path:
             plt.savefig(f"{save_path}")
-        plt.show()  
         if return_fig:
             return ax_list  
   
@@ -1140,7 +1130,6 @@ def scatter_tm_expression(adata,
         
         if save_path:
             plt.savefig(f"{save_path}")
-        plt.show()
         if return_fig:
             return ax
     elif isinstance(tm, list) or isinstance(tm, np.ndarray):
@@ -1181,7 +1170,6 @@ def scatter_tm_expression(adata,
         
         if save_path:
             plt.savefig(f"{save_path}")
-        plt.show()   
         if return_fig:
             return ax_list
 
@@ -1199,7 +1187,6 @@ def overlap_curve(adata, save_path=None, return_fig=False):
     
     if save_path != None:
         plt.savefig(f"{save_path}")
-    plt.show()
     if return_fig:
         return ax
 
@@ -1430,7 +1417,6 @@ def scatter_tm_gene(adata,
 
     if save_path:
         plt.savefig(save_path)
-    plt.show()
     if return_fig:
         return ax_list
 
@@ -1778,5 +1764,3 @@ def draw_tissue_module_id_card(adata,
         os.system("rm -r ./tmp/enrichr_kegg")
     if return_fig:
         return fig
-    plt.show()
-    plt.close()
