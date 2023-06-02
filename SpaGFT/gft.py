@@ -647,6 +647,7 @@ def identify_tissue_module(adata,
                            weight_by_freq=False,
                            normalize_lap=False,
                            random_state=0,
+                           algorithm='louvain',
                            **kwargs):
     """
     After identifying spatially variable genes, this function will group these
@@ -674,10 +675,10 @@ def identify_tissue_module(adata,
         The column names of spaital coordinates in adata.obs_keys() or 
         in adata.obsm_keys. The default is ['array_row','array_col'].
     n_neighbors : int, optional
-        The neighbors in gene similarity graph to perform louvain algorithm. 
+        The neighbors in gene similarity graph to perform louvain/leiden algorithm. 
         The default is 15.
     resolution : float | list | tupple, optional
-        The resolution parameter in louvain algorithm. If resolution is float,
+        The resolution parameter in louvain/leiden algorithm. If resolution is float,
         resolution will be used directly. If resolution is a list, each value
         in this list will be used and the best value will be determined 
         automically. If resolution is tupple, it should be (start, end, step),
@@ -688,9 +689,12 @@ def identify_tissue_module(adata,
         Whether need to normalize laplacian matrix. The default is false.
     random_state : int, optional
         The randomstate. The default is 0.
+    algorithm : str, optional
+        The used clustering algorithm. Options are 'louvain' or 'leiden'.
+        The default is 'louvain'.
     **kwargs : kwargs 
-        The parameters used in louvain algorithms and user can seek help in 
-        sc.tl.louvain.
+        The parameters used in louvain/leiden algorithm and user can seek help in 
+        sc.tl.louvain/sc.tl.leiden.
 
     Returns
     -------
@@ -699,7 +703,7 @@ def identify_tissue_module(adata,
 
     """
     # Find tissue module by grouping Spatially variable genes with similar 
-    # spatial patterns acoording to louvain algorithm.
+    # spatial patterns acoording to louvain/leiden algorithm.
     # Check conditions and determine parameters
     if isinstance(resolution, float) or isinstance(resolution, int):
         single_resolution = True
@@ -763,6 +767,14 @@ def identify_tissue_module(adata,
     else:
         sc.pp.neighbors(gft_adata, n_neighbors=n_neighbors, use_rep='X')
 
+    clustering_alg = None
+    if algorithm == 'louvain':
+        clustering_alg = sc.tl.louvain
+    elif algorithm == 'leiden':
+        clustering_alg = sc.tl.leiden
+    else:
+        raise ValueError("""unknown clustering algorithm chosen""")
+
     # Determining the resolution data type, if resolution is the type of list, 
     # we will select the optimal resolution
     if isinstance(resolution, list):
@@ -780,24 +792,24 @@ def identify_tissue_module(adata,
         # for resolution_index, resolution_value in enumerate(resolution):
         for resolution_index, resolution_value in enumerate(resolution_tqdm):
             gft_adata_current = gft_adata.copy()
-            sc.tl.louvain(gft_adata_current, resolution=resolution_value,
+            clustering_alg(gft_adata_current, resolution=resolution_value,
                           random_state=random_state, **kwargs,
-                          key_added='louvain', )
+                          key_added='clustering')
 
-            gft_adata_current.obs.louvain = [str(eval(i_tm) + 1) for i_tm in \
-                                       gft_adata_current.obs.louvain.tolist()]
-            gft_adata_current.obs.louvain = \
-                pd.Categorical(gft_adata_current.obs.louvain)
+            gft_adata_current.obs.clustering = [str(eval(i_tm) + 1) for i_tm in \
+                                       gft_adata_current.obs.clustering.tolist()]
+            gft_adata_current.obs.clustering = \
+                pd.Categorical(gft_adata_current.obs.clustering)
 
             # tm pseudo expression
-            all_tms_current = gft_adata_current.obs.louvain.cat.categories
+            all_tms_current = gft_adata_current.obs.clustering.cat.categories
             tm_df_current = pd.DataFrame(0, index=tmp_adata.obs_names,
                                          columns='tm_' + all_tms_current)
             # Calculate the clustering of each tm
             for tm in all_tms_current:
                 pseudo_exp = tmp_adata[:,
-                             gft_adata_current.obs.louvain\
-                    [gft_adata_current.obs.louvain == tm].index].X.sum(axis=1)
+                             gft_adata_current.obs.clustering\
+                    [gft_adata_current.obs.clustering == tm].index].X.sum(axis=1)
                 pseudo_exp = np.ravel(pseudo_exp) # tmp_adata = None
                 # Calculate the clustering results
                 predict_tm = KMeans(n_clusters=2,
@@ -833,28 +845,28 @@ def identify_tissue_module(adata,
             # print("Used resolution: \t", resolution)
 
     # Next, clustering genes for given resolution
-    sc.tl.louvain(gft_adata, resolution=resolution, random_state=random_state,
-                  **kwargs, key_added='louvain')
+    clustering_alg(gft_adata, resolution=resolution, random_state=random_state,
+                  **kwargs, key_added='clustering')
     sc.tl.umap(gft_adata)
     adata.uns['detect_TM_data']['gft_umap_tm'] = \
                                         pd.DataFrame(gft_adata.obsm['X_umap'],
                                         index=gft_adata.obs.index,
                                         columns=['UMAP_1', 'UMAP_2'])
     gft_adata.uns['gft_genes_tm'] = [str(eval(i_tm) + 1) for i_tm in \
-                                     gft_adata.obs.louvain.tolist()]
-    gft_adata.obs.louvain = [str(eval(i_tm) + 1) for i_tm in \
-                             gft_adata.obs.louvain.tolist()]
-    gft_adata.obs.louvain = pd.Categorical(gft_adata.obs.louvain)
+                                     gft_adata.obs.clustering.tolist()]
+    gft_adata.obs.clustering = [str(eval(i_tm) + 1) for i_tm in \
+                             gft_adata.obs.clustering.tolist()]
+    gft_adata.obs.clustering = pd.Categorical(gft_adata.obs.clustering)
     adata.var['tissue_module'] = 'None'
-    adata.var.loc[gft_adata.obs_names, 'tissue_module'] = gft_adata.obs.louvain
+    adata.var.loc[gft_adata.obs_names, 'tissue_module'] = gft_adata.obs.clustering
     adata.var['tissue_module'] = pd.Categorical(adata.var['tissue_module'])
     # tm pseudo expression
-    all_tms = gft_adata.obs.louvain.cat.categories
+    all_tms = gft_adata.obs.clustering.cat.categories
     tm_df = pd.DataFrame(0, index=adata.obs_names, columns='tm_' + all_tms)
     pseudo_df = pd.DataFrame(0, index=adata.obs_names, columns='tm_' + all_tms)
     for tm in all_tms:
         pseudo_exp = tmp_adata[:,
-                     gft_adata.obs.louvain[gft_adata.obs.louvain == tm].index]\
+                     gft_adata.obs.clustering[gft_adata.obs.clustering == tm].index]\
             .X.sum(axis=1)
         pseudo_exp = np.ravel(pseudo_exp)
         pseudo_df['tm_' + str(tm)] = pseudo_exp.copy()
@@ -881,7 +893,7 @@ def identify_tissue_module(adata,
                                 columns=tmp_adata.varm['freq_domain'].columns)
 
     for tm in all_tms:
-        tm_gene_list = gft_adata.obs.louvain[gft_adata.obs.louvain == tm].index
+        tm_gene_list = gft_adata.obs.clustering[gft_adata.obs.clustering == tm].index
         freq_signal = tmp_adata.varm['freq_domain'].loc[tm_gene_list,
                       :].sum(axis=0)
         freq_signal = np.abs(freq_signal)
