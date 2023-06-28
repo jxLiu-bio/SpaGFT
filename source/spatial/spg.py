@@ -198,34 +198,26 @@ def identify_tm_list(
 
 def compare_tm_clustering(
     adata: AnnData,
-    svo_list: List[str],
+    annotation: DataFrame,
+    tm_binary: DataFrame,
 ) -> None:
-    pass
-    current_genes = adata.uns["detect_TM_data"]["gft_umap_tm"].index.tolist()
-    if set(svo_list) <= set(current_genes):
-        svo_list = np.intersect1d(svo_list, current_genes)
+    # TODO: Find a better way to choose a TM for cells that belong to more than one TM.
+    def get_cell_tm(row):
+        tms = row[row == "1"]
+        if len(tms) >= 1:
+            tm = tms.index[0]
+            return tm
+        else:
+            return "tm_unknown"
 
-    clustering_df = pd.concat(
-        (
-            adata.uns["detect_TM_data"]["gft_umap_tm"].loc[svo_list, :],
-            adata.var.loc[svo_list, :].tissue_module,
-        ),
-        axis=1,
-    )
-
-    categories = [eval(i) for i in np.unique(clustering_df.tissue_module)]
-    categories = np.sort(np.array(categories))
-    categories = categories.astype(str)
-    clustering_df.tissue_module = pd.Categorical(
-        clustering_df.tissue_module, categories=categories
-    )
-
-    tm_clustering_score = sk.metrics.adjusted_rand_score(
-        adata.obs["annotation"], clustering_df
-    )
+    to_evaluate = tm_binary.apply(get_cell_tm, axis=1).astype("category")
+    tm_clustering_score = sk.metrics.adjusted_rand_score(annotation, to_evaluate)
 
     adata.uns["tm_clustering_score"] = tm_clustering_score
-    print(f"Svo clustering score (compared to reference in annotations): {tm_clustering_score}")
+    print(
+        f"Svo clustering score (compared to reference in annotations): {tm_clustering_score}"
+        f"\nNOTE: This score is not accurate -- a better system should be devised for cells that belong to more than one TM."
+    )
 
 
 ### ____________________________________________________________________________
@@ -265,6 +257,7 @@ def write_svo_selection(
     dirpath: Union[str, Path],
     adata: AnnData,
     svo_selection: List[str],
+    spatial_info: Union[str, Tuple[str, str]],
     omics_type: OmicsType,
 ) -> None:
     os.makedirs(dirpath, exist_ok=True)
@@ -277,13 +270,14 @@ def write_svo_selection(
     svo_dirpath = f"{dirpath}/svo"
     os.makedirs(svo_dirpath, exist_ok=True)
     for svo in svo_selection:
-        write_svo(svo_dirpath, adata, svo, omics_type)
+        write_svo(svo_dirpath, adata, svo, spatial_info, omics_type)
 
 
 def write_svo(
     dirpath: Union[str, Path],
     adata: AnnData,
     svo: str,
+    spatial_info: Union[str, Tuple[str, str]],
     omics_type: OmicsType,
 ) -> None:
     os.makedirs(dirpath, exist_ok=True)
@@ -307,7 +301,7 @@ def write_svo(
         spg.plot.scatter_gene(
             adata,
             gene=svo,
-            spatial_info=["x", "y"],
+            spatial_info=spatial_info,
             cmap="magma",
             return_fig=True,
             show_fig=False,
@@ -858,10 +852,12 @@ def process_actions(parser: ar.ArgumentParser, args: ar.Namespace) -> None:
             raise ar.ArgumentTypeError(
                 "need to identify spatially variable omics first"
             )
-        if tm_svo_df is None:
+        if tm_svo_df is None or "tm_binary" not in adata.obsm:
             raise ar.ArgumentTypeError("need to identify tissue modules first")
+        if "annotation" not in adata.obs:
+            raise ar.ArgumentTypeError("annotations missing from dataset")
 
-        compare_tm_clustering(adata, svo_list)
+        compare_tm_clustering(adata, adata.obs["annotation"], adata.obsm["tm_binary"])
     if "tm_clustering_score" in adata.uns:
         tm_clustering_score = adata.uns["tm_clustering_score"]
 
@@ -901,6 +897,7 @@ def process_actions(parser: ar.ArgumentParser, args: ar.Namespace) -> None:
             output_dir,
             adata,
             svo_selection,
+            spatial_info,
             omics_type,
         )
 
