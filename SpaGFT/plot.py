@@ -20,6 +20,7 @@ def gene_freq_signal(adata,
                      colors=['#CA1C1C', '#345591'],
                      save_path=None,
                      return_fig=False,
+                     show_fig=True,
                      **kwargs):
     
     if isinstance(gene, str):
@@ -38,7 +39,8 @@ def gene_freq_signal(adata,
         plt.ylim(0, y_max * 1.1)
         plt.xlim(0, freq_signal.size)
         plt.title("Gene: " + gene)
-        plt.show()
+        if show_fig:
+            plt.show()
         if save_path !=None:
             plt.savefig(f"{save_path}")
         if return_fig:
@@ -72,7 +74,8 @@ def gene_freq_signal(adata,
         
         if save_path !=None:
             plt.savefig(f"{save_path}")
-        plt.show()
+        if show_fig:
+            plt.show()
         if return_fig:
             return ax_list
 
@@ -85,7 +88,9 @@ def tm_freq_signal(adata,
                    y_range=None,
                    xy_axis=True,
                    return_fig=False, 
-                   save_path=None, **kwargs):
+                   save_path=None,
+                   show_fig=True,
+                   **kwargs):
     if isinstance(tm, str):
         #fig, ax = plt.subplots()
         plt.figure(figsize=figsize, dpi=dpi)
@@ -115,7 +120,8 @@ def tm_freq_signal(adata,
             ax.get_yaxis().set_visible(False)
         if save_path !=None:
             plt.savefig(f"{save_path}")
-        plt.show()
+        if show_fig:
+            plt.show()
         if return_fig:
             return ax
         
@@ -159,7 +165,8 @@ def tm_freq_signal(adata,
         
         if save_path != None:
             plt.savefig(f"{save_path}")
-        plt.show()
+        if show_fig:
+            plt.show()
         if return_fig:
             return ax_list
 
@@ -169,7 +176,9 @@ def _subTm_freq_signal(adata, subTM,
                        dpi=100,
                        color='#CA1C1C',
                        y_range=[0, 0.1],
-                       return_fig=False, **kwargs):
+                       return_fig=False,
+                       show_fig=True,
+                       **kwargs):
     # Show the frequency signal
     freq_signal = adata.uns['freq_signal_subTM'].loc[subTM, :].values
     plt.figure(figsize=figsize, dpi=dpi)
@@ -183,7 +192,8 @@ def _subTm_freq_signal(adata, subTM,
     plt.ylim(y_range[0], y_range[1])
     plt.xlim(0, freq_signal.size)
     plt.title(subTM)
-    plt.show()
+    if show_fig:
+        plt.show()
     if return_fig:
         return ax
     
@@ -194,6 +204,7 @@ def gene_signal_umap(adata,
                      random_state=0,
                      return_fig=False,
                      save_path=None,
+                     show_fig=True,
                      **kwargs):
     '''
     The UMAP of SVGs and non-SVGs.
@@ -230,7 +241,7 @@ def gene_signal_umap(adata,
     freq_domain.index = adata.var_names
     umap_adata = sc.AnnData(freq_domain)
     sc.pp.neighbors(umap_adata, n_neighbors=n_neighbors, use_rep='X')
-    sc.tl.umap(umap_adata, random_state=0)
+    sc.tl.umap(umap_adata, random_state=random_state)
     adata.varm['freq_umap_svg'] = umap_adata.obsm['X_umap']
     print("""The umap coordinates of genes when identify SVGs could be found in 
           adata.varm['freq_umap_svg']""")
@@ -246,7 +257,8 @@ def gene_signal_umap(adata,
     
     if save_path != None:
         plt.savefig(f"{save_path}")
-    plt.show()
+    if show_fig:
+        plt.show()
     if return_fig:
         return fig
 
@@ -369,6 +381,7 @@ def _umap_svg_cluster(adata,
                      size=None,
                      cmap='magma', 
                      spatial_info=['array_row', 'array_col'],
+                     colors=['#CA1C1C','#CCCCCC'],
                      coord_ratio=1, 
                      return_plot=True):
     
@@ -824,7 +837,8 @@ def scatter_gene(adata,
                  spatial_info=['array_row', 'array_col'],
                  dpi=100,
                  return_fig=False, 
-                 save_path=None):
+                 save_path=None,
+                 show_fig=True):
     '''
     Visualize genes through given spatial information.
 
@@ -922,7 +936,8 @@ def scatter_gene(adata,
         
         if save_path != None:
             plt.savefig(save_path)
-        plt.show()
+        if show_fig:
+            plt.show()
         if return_fig:
             return ax
 
@@ -963,7 +978,8 @@ def scatter_gene(adata,
             
             if save_path:
                 plt.savefig(save_path)
-            plt.show()
+            if show_fig:
+                plt.show()
             if return_fig:
                 return ax_list
 
@@ -974,7 +990,8 @@ def scatter_tm(adata,
                size=None, 
                spatial_info=['array_row', 'array_col'], 
                save_path=None,
-               return_fig=False):
+               return_fig=False,
+               show_fig=True):
     '''
     Plot the spatial map of a tissue module.
 
@@ -1044,7 +1061,8 @@ def scatter_tm(adata,
         
         if save_path:
             plt.savefig(f"{save_path}")
-        plt.show()
+        if show_fig:
+            plt.show()
         if return_fig:
             return ax
     elif isinstance(tm, list) or isinstance(tm, np.ndarray):
@@ -1094,7 +1112,8 @@ def scatter_tm(adata,
         
         if save_path:
             plt.savefig(f"{save_path}")
-        plt.show()  
+        if show_fig:
+            plt.show()
         if return_fig:
             return ax_list  
   
@@ -1105,7 +1124,8 @@ def scatter_tm_expression(adata,
                           size=None, 
                           spatial_info=['array_row', 'array_col'], 
                           save_path=None,
-                          return_fig=False):
+                          return_fig=False,
+                          show_fig=True):
     x = []
     y = []
     if spatial_info in adata.obsm_keys():
@@ -1140,7 +1160,8 @@ def scatter_tm_expression(adata,
         
         if save_path:
             plt.savefig(f"{save_path}")
-        plt.show()
+        if show_fig:
+            plt.show()
         if return_fig:
             return ax
     elif isinstance(tm, list) or isinstance(tm, np.ndarray):
@@ -1181,11 +1202,12 @@ def scatter_tm_expression(adata,
         
         if save_path:
             plt.savefig(f"{save_path}")
-        plt.show()   
+        if show_fig:
+            plt.show()
         if return_fig:
             return ax_list
 
-def overlap_curve(adata, save_path=None, return_fig=False):
+def overlap_curve(adata, save_path=None, return_fig=False, show_fig=True):
     curve_dot = adata.uns['detect_TM_data']['overlap_curve']
     curve_x = [float(x.replace("res_", "")) for x in list(curve_dot.index)]
     curve_y = list(curve_dot["score"].values)
@@ -1199,7 +1221,8 @@ def overlap_curve(adata, save_path=None, return_fig=False):
     
     if save_path != None:
         plt.savefig(f"{save_path}")
-    plt.show()
+    if show_fig:
+        plt.show()
     if return_fig:
         return ax
 
@@ -1208,7 +1231,8 @@ def scatter_umap_clustering(adata,
                             size=3,
                             alpha=1,
                             return_fig=False,
-                            save_path=None):
+                            save_path=None,
+                            show_fig=True):
     '''
     Visualize clustering reuslts.
 
@@ -1261,8 +1285,8 @@ def scatter_umap_clustering(adata,
                   + geom_point(size=size, alpha=alpha, stroke=0.1)
                   + scale_fill_hue(s=0.9, l=0.65, h=0.0417, color_space='husl')
                   + theme_classic())
-    print(base_plot)
-    
+    if show_fig:
+        base_plot.draw()
     if save_path != None:
         base_plot.save(f"{save_path}")
     if return_fig:
@@ -1277,7 +1301,8 @@ def scatter_tm_gene(adata,
                     size=None,
                     spatial_info=['array_row', 'array_col'],
                     return_fig=False,
-                    save_path=None):
+                    save_path=None,
+                    show_fig=True):
     """
     Plot a tissue module and several genes simultaneously.
 
@@ -1430,7 +1455,8 @@ def scatter_tm_gene(adata,
 
     if save_path:
         plt.savefig(save_path)
-    plt.show()
+    if show_fig:
+        plt.show()
     if return_fig:
         return ax_list
 
@@ -1447,7 +1473,7 @@ def draw_tissue_module_id_card(adata,
                                size=[7, 0.8],
                                return_fig=False,
                                save_path=None,
-                               ):
+                               show_fig=True):
     '''
     Plot the details of a tissue module to generate a TM ID CARD.
 
@@ -1774,9 +1800,10 @@ def draw_tissue_module_id_card(adata,
     # plt.tight_layout()
     if save_path is not None:
         plt.savefig(f"{save_path}/tm_{tm}.png")
-    if os.path.exists("./tmp/enrichr_kegg"):
-        os.system("rm -r ./tmp/enrichr_kegg")
+    if os.path.exists("./tmp"):
+        os.system("rm -r ./tmp")
     if return_fig:
         return fig
-    plt.show()
-    plt.close()
+    if show_fig:
+        plt.show()
+    

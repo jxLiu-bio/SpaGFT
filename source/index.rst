@@ -20,6 +20,7 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    spatial/mouse_brain_coronal
    spatial/lymphnode_tutorial
    spatial/codex_A6
+   Spg Script
    
 
 

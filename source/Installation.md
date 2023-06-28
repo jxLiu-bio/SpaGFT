@@ -24,7 +24,7 @@ If you want to quit this virtual environment, just run ``` conda deactivate ```
 #### 3. Install ```SpaGFT```
 ##### 3.1 Approach 1: install ```SpaGFT``` by Pipy.
 You can install ```SpaGFT``` easily in this way by
-```
+```shell
 pip install SpaGFT
 ```
 You can also install ```SpaGFT``` via Github if there exists any problems.
@@ -43,7 +43,7 @@ python setup.py install
 ```
 
 We recommend [jupyter](https://jupyter.org/) for interactive usage. It can be installed and configured by
-```
+```shell
 conda install jupyter
 python -m ipykernel install --user --name=spagft_env --display-name=spagft_env
 ```
