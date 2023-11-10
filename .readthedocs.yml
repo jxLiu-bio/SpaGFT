@@ -2,8 +2,9 @@ version: 2
 
 build:
   os: ubuntu-20.04
-  python:
-    version: 3.7
+  tools:
+    python: "3.7"
+    
 
 sphinx:
 
@@ -12,7 +13,6 @@ sphinx:
 formats: all
 
 python:
-
   version: 3.7
 
   install:
