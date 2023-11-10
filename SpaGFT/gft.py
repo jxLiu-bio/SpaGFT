@@ -1,18 +1,14 @@
-import pandas as pd
-import numpy as np
 import warnings
-import scipy.sparse as ss
+import numpy as np
+import pandas as pd
 import scanpy as sc
+import scipy.sparse as ss
 from sklearn import preprocessing
-from SpaGFT.utilis import get_laplacian_mtx, kneed_select_values
-from SpaGFT.utilis import test_significant_freq, get_overlap_cs_core
 from sklearn.cluster import KMeans
-import os
+from SpaGFT_1110.utils import get_laplacian_mtx, kneed_select_values
+from SpaGFT_1110.utils import test_significant_freq, get_overlap_cs_core
 
-
-# os.environ["TF_CPP_MIN_LOG_LEVEL"] = '2'
 warnings.filterwarnings("ignore")
-sc.settings.verbosity = 1
 
 
 def low_pass_enhancement(adata,
@@ -25,36 +21,35 @@ def low_pass_enhancement(adata,
     """
     Implement gene expression with low-pass filter. After this step, the 
     spatially variables genes will be more smooth than the previous. The 
-    function can also be treated as denoising. Note that the denosing results 
+    function can also be treated as de-noising. Note that the de-nosing results
     is related to spatial graph topology so that only the results of spatially 
     variable genes could be convincing.
 
     Parameters
     ----------
     adata : AnnData
-        adata.X is the normalized count matrix. Besides, the spatial coordinat-
-        es of all spots should be found in adata.obs or adata.obsm.
+        adata.X is the normalized count matrix. Besides, the spatial coordinates of all spots should be found in
+        adata.obs or adata.obsm.
     ratio_low_freq : float | "infer", optional
         The ratio_low_freq will be used to determine the number of the FMs with
         low frequencies. Indeed, the ratio_low_freq * sqrt(number of spots) low
-        frequecy FMs will be calculated. The default is 'infer'.
-        A high can achieve better smothness. c should be setted to [0, 0.1].
+        frequency FMs will be calculated. The default is 'infer'.
+        A high can achieve better smoothness. c should be set to [0, 0.1].
     ratio_neighbors: float | 'infer', optional
         The ratio_neighbors will be used to determine the number of neighbors
-        when contruct the KNN graph by spatial coordinates. Indeed, ratio_neig-
-        hobrs * sqrt(number of spots) / 2 indicates the K. If 'infer', the para
-        will be set to 1.0. The default is 'infer'.
+        when construct the KNN graph by spatial coordinates. Indeed, ratio_neighobrs * sqrt(number of spots) / 2
+        indicates the K. If 'infer', the para will be set to 1.0. The default is 'infer'.
     c: float, optional
-        c balances the smoothness and difference with previous expresssion. The
+        c balances the smoothness and difference with previous expression. The
         default is 0.001
-    spatial_info : list | tupple | string, optional
-        The column names of spaital coordinates in adata.obs_names or key
+    spatial_info : list | tuple | string, optional
+        The column names of spatial coordinates in adata.obs_names or key
         in adata.obsm_keys() to obtain spatial information. The default
         is ['array_row', 'array_col'].
     normalize_lap : bool. optional
-        Whether need to normalize the Laplcian matrix. The default is False.
+        Whether you need to normalize the Laplacian matrix. The default is False.
     inplace: bool, optional
-        Whether need to replace adata.X with the enhanced expression matrix.
+        Whether you need to replace adata.X with the enhanced expression matrix.
         
 
     Returns
@@ -74,8 +69,7 @@ def low_pass_enhancement(adata,
         else:
             num_low_frequency = 5 * int(np.ceil(np.sqrt(adata.shape[0])))
     else:
-        num_low_frequency = int(np.ceil(np.sqrt(adata.shape[0]) * \
-                                ratio_low_freq))
+        num_low_frequency = int(np.ceil(np.sqrt(adata.shape[0]) * ratio_low_freq))
 
     if ratio_neighbors == 'infer':
         if adata.shape[0] <= 500:
@@ -83,12 +77,11 @@ def low_pass_enhancement(adata,
         else:
             num_neighbors = int(np.ceil(np.sqrt(adata.shape[0]) / 2))
     else:
-        num_neighbors = int(np.ceil(np.sqrt(adata.shape[0]) / 2 \
-                                    * ratio_neighbors))
+        num_neighbors = int(np.ceil(np.sqrt(adata.shape[0]) / 2 * ratio_neighbors))
 
     adata.var_names_make_unique()
     sc.pp.filter_genes(adata, min_cells=1)
-    
+
     # Get Laplacian matrix according to coordinates 
     lap_mtx = get_laplacian_mtx(adata,
                                 num_neighbors=num_neighbors,
@@ -97,32 +90,31 @@ def low_pass_enhancement(adata,
 
     # Fourier modes of low frequency
     num_low_frequency = min(num_low_frequency, adata.shape[0])
-    eigvals, eigvecs = ss.linalg.eigsh(lap_mtx.astype(float),
-                                       k=num_low_frequency,
-                                       which='SM')
+    eig_vals, eig_vecs = ss.linalg.eigsh(lap_mtx.astype(float),
+                                         k=num_low_frequency,
+                                         which='SM')
 
-    # *********************** Graph Fourier Tranform **************************
+    # *********************** Graph Fourier Transform **************************
     # Calculate GFT
-    eigvecs_T = eigvecs.transpose()
+    eig_vecs_t = eig_vecs.transpose()
     if not ss.issparse(adata.X):
         exp_mtx = adata.X
     else:
         exp_mtx = adata.X.toarray()
-    frequency_array = np.matmul(eigvecs_T, exp_mtx)
+    frequency_array = np.matmul(eig_vecs_t, exp_mtx)
     # low-pass filter
-    filter_list = [1 / (1 + c * eigv) for eigv in eigvals]
-    # filter_list = [np.exp(-c * eigv) for eigv in eigvals]
+    filter_list = [1 / (1 + c * eigv) for eigv in eig_vals]
     filter_array = np.matmul(np.diag(filter_list), frequency_array)
-    filter_array = np.matmul(eigvecs, filter_array)
+    filter_array = np.matmul(eig_vecs, filter_array)
     filter_array[filter_array < 0] = 0
 
-    # whether need to replace original count matrix
+    # whether you need to replace original count matrix
     if inplace and not ss.issparse(adata.X):
         adata.X = filter_array
     elif inplace:
         import scipy.sparse as ss
         adata.X = ss.csr.csr_matrix(filter_array)
-    
+
     return adata
 
 
@@ -132,42 +124,41 @@ def determine_frequency_ratio(adata,
                               ratio_neighbors='infer',
                               spatial_info=['array_row', 'array_col'],
                               normalize_lap=False):
-    '''
-    This function could choosed the number of FMs automatically based on 
-    kneedle algorithm.
+    """
+    This function could determine the number of FMs automatically based on kneedle algorithm.
 
     Parameters
     ----------
     adata : AnnData
-        adata.X is the normalized count matrix. Besides, the spatial coordinat-
-        es of all spots should be found in adata.obs or adata.obsm.
+        adata.X is the normalized count matrix. Besides, the spatial coordinates of all spots should be found in
+        adata.obs or adata.obsm.
     low_end : float, optional
-        The the range of low-frequency FMs. The default is 5.
-    high_end : TYPE, optional
-        The the range of high-frequency FMs. The default is 5.
+        The range of low-frequency FMs. The default is 5.
+    high_end : float, optional
+        The range of high-frequency FMs. The default is 5.
     ratio_neighbors : float, optional
         The ratio_neighbors will be used to determine the number of neighbors
-        when contruct the KNN graph by spatial coordinates. Indeed, ratio_neig-
-        hobrs * sqrt(number of spots) / 2 indicates the K. If 'infer', the para
+        when construct the KNN graph by spatial coordinates. Indeed, ratio_neighobrs * sqrt(number of spots) / 2
+        indicates the K. If 'infer', the para
         will be set to 1.0. The default is 'infer'.
-    spatial_info : list | tupple | string, optional
-        The column names of spaital coordinates in adata.obs_names or key
+    spatial_info : list | tuple | string, optional
+        The column names of spatial coordinates in adata.obs_names or key
         in adata.obsm_keys() to obtain spatial information. The default
         is ['array_row', 'array_col'].
     normalize_lap : bool, optional
-        Whether need to normalize the Laplcian matrix. The default is False. 
+        Whether you need to normalize the Laplacian matrix. The default is False.
         The default is False.
 
     Returns
     -------
     low_cutoff : float
-        The low_cutoff * sqrt(the number of spots) low-frequency FMs are 
+        The low_cutoff * sqrt(the number of spots) low-frequency FMs are
         recommended in detecting SVG.
     high_cutoff : float
-        The high_cutoff * sqrt(the number of spots) low-frequency FMs are 
+        The high_cutoff * sqrt(the number of spots) low-frequency FMs are
         recommended in detecting SVG.
 
-    '''
+    """
     # Determine the number of neighbors
     if ratio_neighbors == 'infer':
         num_neighbors = int(np.ceil(np.sqrt(adata.shape[0]) / 2))
@@ -184,45 +175,44 @@ def determine_frequency_ratio(adata,
     adata.var_names_make_unique()
     sc.pp.filter_genes(adata, min_cells=1)
 
-    # *************** Construct graph and corresponding matrixs ***************
+    # *************** Construct graph and corresponding matrix ***************
     lap_mtx = get_laplacian_mtx(adata, num_neighbors=num_neighbors,
                                 spatial_key=spatial_info,
                                 normalization=normalize_lap)
-    print("Obatain the Laplacian matrix")
+    print("Obtain the Laplacian matrix")
 
     # Next, calculate the eigenvalues and eigenvectors of the Laplace matrix
     # Fourier bases of low frequency
-    eigvals_s, eigvecs_s = ss.linalg.eigsh(lap_mtx.astype(float),
-                             k=int(np.ceil(low_end * np.sqrt(adata.shape[0]))),
-                             which='SM')
-    low_cutoff = np.ceil(kneed_select_values(eigvals_s) / \
+    eig_vals_s, eig_vecs_s = ss.linalg.eigsh(lap_mtx.astype(float),
+                                             k=int(np.ceil(low_end * np.sqrt(adata.shape[0]))),
+                                             which='SM')
+    low_cutoff = np.ceil(kneed_select_values(eig_vals_s) /
                          np.sqrt(adata.shape[0]) * 1000) / 1000
     if low_cutoff >= low_end:
         low_cutoff = low_end
     if low_cutoff < 1:
         low_cutoff = 1
-    if adata.shape[0] >= 40000 and low_cutoff <=0.5:
+    if adata.shape[0] >= 40000 and low_cutoff <= 0.5:
         low_cutoff = 0.5
-    num_low = int(np.ceil(np.sqrt(adata.shape[0]) * \
-                          low_cutoff))
-    eigvals_l, eigvecs_l = ss.linalg.eigsh(lap_mtx.astype(float),
-                            k=int(np.ceil(high_end * np.sqrt(adata.shape[0]))),
-                            which='LM')
-    high_cutoff = np.ceil(kneed_select_values(eigvals_l, increasing=False) / \
+
+    num_low = int(np.ceil(np.sqrt(adata.shape[0]) * low_cutoff))
+    eig_vals_l, eig_vecs_l = ss.linalg.eigsh(lap_mtx.astype(float),
+                                             k=int(np.ceil(high_end * np.sqrt(adata.shape[0]))),
+                                             which='LM')
+    high_cutoff = np.ceil(kneed_select_values(eig_vals_l, increasing=False) /
                           np.sqrt(adata.shape[0]) * 1000) / 1000
     if high_cutoff < 1:
         high_cutoff = 1
     if high_cutoff >= high_end:
         high_cutoff = high_end
-    if adata.shape[0] >= 40000 and high_cutoff <=0.5:
+    if adata.shape[0] >= 40000 and high_cutoff <= 0.5:
         high_cutoff = 0.5
-    num_high = int(np.ceil(np.sqrt(adata.shape[0]) * \
-                           high_cutoff))
+    num_high = int(np.ceil(np.sqrt(adata.shape[0]) * high_cutoff))
 
-    adata.uns['FMs_after_select'] = {'low_FMs_frequency': eigvals_s[:num_low],
-                                     'low_FMs': eigvecs_s[:, :num_low],
-                 'high_FMs_frequency': eigvals_l[(len(eigvals_l) - num_high):],
-                 'high_FMs': eigvecs_l[:, (len(eigvals_l) - num_high):]}
+    adata.uns['FMs_after_select'] = {'low_FMs_frequency': eig_vals_s[:num_low],
+                                     'low_FMs': eig_vecs_s[:, :num_low],
+                                     'high_FMs_frequency': eig_vals_l[(len(eig_vals_l) - num_high):],
+                                     'high_FMs': eig_vecs_l[:, (len(eig_vals_l) - num_high):]}
 
     return low_cutoff, high_cutoff
 
@@ -237,67 +227,63 @@ def detect_svg(adata,
                S=6,
                cal_pval=True):
     """
-    Rank genes acoording to GFT score to find spatially variable genes based on
-    graph Fourier transform.
+    Rank genes according to GFT score to find spatially variable genes based on graph Fourier transform.
 
     Parameters
     ----------
     adata : AnnData
-        adata.X is the normalized count matrix. Besides, the spatial coordinat-
-        es could be found in adata.obs or adata.obsm.
+        adata.X is the normalized count matrix. Besides, the spatial coordinates could be found in adata.obs or
+        adata.obsm.
     ratio_low_freq : float | "infer", optional
         The ratio_low_freq will be used to determine the number of the FMs with
         low frequencies. Indeed, the ratio_low_freq * sqrt(number of spots) low
-        frequecy FMs will be calculated. If 'infer', the ratio_low_freq will be
+        frequency FMs will be calculated. If 'infer', the ratio_low_freq will be
         set to 1.0. The default is 'infer'.
     ratio_high_freq: float | 'infer', optional
         The ratio_high_freq will be used to determine the number of the FMs of
         high frequencies. Indeed, the ratio_high_freq * sqrt(number of spots) 
-        high frequecy FMs will be calculated. If 'infer', the ratio_high_freq 
+        high frequency FMs will be calculated. If 'infer', the ratio_high_freq
         will be set to 1.0. The default is 'infer'.
     ratio_neighbors: float | 'infer', optional
         The ratio_neighbors will be used to determine the number of neighbors
-        when contruct the KNN graph by spatial coordinates. Indeed, ratio_neig-
-        hobrs * sqrt(number of spots) / 2 indicates the K. If 'infer', the para
-        will be set to 1.0. The default is 'infer'.
-    spatial_info : list | tupple | string, optional
-        The column names of spaital coordinates in adata.obs_names or key
+        when construct the KNN graph by spatial coordinates. Indeed, ratio_neighbors
+        * sqrt(number of spots) / 2 indicates the K. If 'infer', the para will be set to 1.0.
+        The default is 'infer'.
+    spatial_info : list | tuple | string, optional
+        The column names of spatial coordinates in adata.obs_names or key
         in adata.varm_keys() to obtain spatial information. The default
         is ['array_row', 'array_col'].
     normalize_lap : bool, optional
-        Whether need to normalize laplacian matrix. The default is false.
+        Whether you need to normalize laplacian matrix. The default is false.
     filter_peaks: bool, optional
-        For calculated vectors/signals in frequency/spectral domian, whether
+        For calculated vectors/signals in frequency/spectral domain, whether
         filter low peaks to stress the important peaks. The default is True.
     S: int, optional
         The sensitivity parameter in Kneedle algorithm. A large S will enable
-        more genes indentified as SVGs according to gft_score. The default is
-        6.
+        more genes are identified as SVGs according to gft_score.
+         The default is 6.
     cal_pval : bool, optional
-        Whether need to calculate p val by mannwhitneyu. The default is False.
+        Whether you need to calculate p val by mannwhitneyu. The default is False.
     Returns
     -------
     score_df : dataframe
         Return gene information.
 
     """
-  # Ensure parameters
+    # Ensure parameters
     if ratio_low_freq == 'infer':
         num_low_frequency = int(np.ceil(np.sqrt(adata.shape[0])))
     else:
-        num_low_frequency = int(np.ceil(np.sqrt(adata.shape[0]) * \
-                                        ratio_low_freq))
+        num_low_frequency = int(np.ceil(np.sqrt(adata.shape[0]) * ratio_low_freq))
     if ratio_high_freq == 'infer':
         num_high_frequency = int(np.ceil(np.sqrt(adata.shape[0])))
     else:
-        num_high_frequency = int(np.ceil(np.sqrt(adata.shape[0]) * \
-                                         ratio_high_freq))
+        num_high_frequency = int(np.ceil(np.sqrt(adata.shape[0]) * ratio_high_freq))
 
     if ratio_neighbors == 'infer':
         num_neighbors = int(np.ceil(np.sqrt(adata.shape[0]) / 2))
     else:
-        num_neighbors = int(np.ceil(np.sqrt(adata.shape[0]) / 2 \
-                                    * ratio_neighbors))
+        num_neighbors = int(np.ceil(np.sqrt(adata.shape[0]) / 2 * ratio_neighbors))
     if adata.shape[0] <= 500:
         num_neighbors = 4
 
@@ -307,62 +293,60 @@ def detect_svg(adata,
 
     # Check dimensions
     if 'FMs_after_select' in adata.uns_keys():
-        low_condition = (num_low_frequency == adata.uns['FMs_after_select'] \
-            ['low_FMs_frequency'].size)
-        high_condition = (num_high_frequency == adata.uns['FMs_after_select'] \
-            ['high_FMs_frequency'].size)
+        low_condition = (num_low_frequency == adata.uns['FMs_after_select']['low_FMs_frequency'].size)
+        high_condition = (num_high_frequency == adata.uns['FMs_after_select']['high_FMs_frequency'].size)
     else:
         low_condition = False
         high_condition = False
-    # ************ Construct graph and corresponding matrixs *************
-    lap_mtx = get_laplacian_mtx(adata, num_neighbors=num_neighbors,
+
+    # ************ Construct graph and corresponding matrix *************
+    lap_mtx = get_laplacian_mtx(adata,
+                                num_neighbors=num_neighbors,
                                 spatial_key=spatial_info,
                                 normalization=normalize_lap)
 
     # Next, calculate the eigenvalues and eigenvectors of the Laplacian
     # matrix as the Fourier modes with certain frequencies
     if not low_condition:
-        eigvals_s, eigvecs_s = ss.linalg.eigsh(lap_mtx.astype(float),
-                                               k=num_low_frequency,
-                                               which='SM')
+        eig_vals_s, eig_vecs_s = ss.linalg.eigsh(lap_mtx.astype(float),
+                                                 k=num_low_frequency,
+                                                 which='SM')
     else:
-        eigvals_s, eigvecs_s = adata.uns['FMs_after_select']\
-                                   ['low_FMs_frequency'],\
-                               adata.uns['FMs_after_select']['low_FMs']
+        eig_vals_s, eig_vecs_s = adata.uns['FMs_after_select']['low_FMs_frequency'], \
+            adata.uns['FMs_after_select']['low_FMs']
         print('The precalculated low-frequency FMs are USED')
     if not high_condition:
         if num_high_frequency > 0:
             # Fourier bases of high frequency
-            eigvals_l, eigvecs_l = ss.linalg.eigsh(lap_mtx.astype(float),
-                                                   k=num_high_frequency,
-                                                   which='LM')
+            eig_vals_l, eig_vecs_l = ss.linalg.eigsh(lap_mtx.astype(float),
+                                                     k=num_high_frequency,
+                                                     which='LM')
     else:
-        eigvals_l, eigvecs_l = adata.uns['FMs_after_select']\
-                                        ['high_FMs_frequency'],\
-                               adata.uns['FMs_after_select']['high_FMs']
+        eig_vals_l, eig_vecs_l = adata.uns['FMs_after_select']['high_FMs_frequency'], \
+            adata.uns['FMs_after_select']['high_FMs']
         print('The precalculated high-frequency FMs are USED')
     if num_high_frequency > 0:
         # eigenvalues
-        eigvals = np.concatenate((eigvals_s, eigvals_l))
+        eig_vals = np.concatenate((eig_vals_s, eig_vals_l))
         # eigenvectors
-        eigvecs = np.concatenate((eigvecs_s, eigvecs_l), axis=1)
+        eig_vecs = np.concatenate((eig_vecs_s, eig_vecs_l), axis=1)
     else:
-        eigvals = eigvals_s
-        eigvecs = eigvecs_s
+        eig_vals = eig_vals_s
+        eig_vecs = eig_vecs_s
 
-    # ************************ Graph Fourier Tranform *************************
+    # ************************ Graph Fourier Transform *************************
     # Calculate GFT
-    eigvecs_T = eigvecs.transpose()
+    eig_vecs_t = eig_vecs.transpose()
     if type(adata.X) == np.ndarray:
         exp_mtx = preprocessing.scale(adata.X)
     else:
         exp_mtx = preprocessing.scale(adata.X.toarray())
 
-    frequency_array = np.matmul(eigvecs_T, exp_mtx)
+    frequency_array = np.matmul(eig_vecs_t, exp_mtx)
     frequency_array = np.abs(frequency_array)
 
     # Filter noise peaks
-    if filter_peaks == True:
+    if filter_peaks:
         frequency_array_thres_low = \
             np.quantile(frequency_array[:num_low_frequency, :],
                         q=0.5, axis=0)
@@ -381,11 +365,10 @@ def detect_svg(adata,
                                               norm='l1',
                                               axis=0)
 
-    eigvals = np.abs(eigvals)
-    eigvals_weight = np.exp(-1 * eigvals)
-    score_list = np.matmul(eigvals_weight, frequency_array)
-    score_ave = np.matmul(eigvals_weight, (1 / len(eigvals)) * \
-                          np.ones(len(eigvals)))
+    eig_vals = np.abs(eig_vals)
+    eig_vals_weight = np.exp(-1 * eig_vals)
+    score_list = np.matmul(eig_vals_weight, frequency_array)
+    score_ave = np.matmul(eig_vals_weight, (1 / len(eig_vals)) * np.ones(len(eig_vals)))
     score_list = score_list / score_ave
     print("Graph Fourier Transform finished!")
 
@@ -414,12 +397,12 @@ def detect_svg(adata,
     print("""Gene signals in frequency domain when detect SVGs could be found
           in adata.varm['freq_domain_svg']""")
     adata.uns["identify_SVG_data"] = {}
-    adata.uns["identify_SVG_data"]['frequencies_low'] = eigvals_s
-    adata.uns["identify_SVG_data"]['frequencies_high'] = eigvals_l
-    adata.uns["identify_SVG_data"]['fms_low'] = eigvecs_s
-    adata.uns["identify_SVG_data"]['fms_high'] = eigvecs_l
+    adata.uns["identify_SVG_data"]['frequencies_low'] = eig_vals_s
+    adata.uns["identify_SVG_data"]['frequencies_high'] = eig_vals_l
+    adata.uns["identify_SVG_data"]['fms_low'] = eig_vecs_s
+    adata.uns["identify_SVG_data"]['fms_high'] = eig_vecs_l
 
-    if cal_pval == True:
+    if cal_pval:
         if num_high_frequency == 0:
             raise ValueError("ratio_high_freq should be greater than 0")
         pval_list = test_significant_freq(
@@ -434,7 +417,7 @@ def detect_svg(adata,
     return score_df
 
 
-def calculate_frequcncy_domain(adata,
+def calculate_frequency_domain(adata,
                                ratio_low_freq='infer',
                                ratio_high_freq='infer',
                                ratio_neighbors='infer',
@@ -449,31 +432,31 @@ def calculate_frequcncy_domain(adata,
     Parameters
     ----------
     adata : AnnData
-        adata.X is the normalized count matrix. Besides, the spatial coordinat-
-        es could be found in adata.obs or adata.obsm.
+        adata.X is the normalized count matrix. Besides, the spatial coordinates
+        could be found in adata.obs or adata.obsm.
     ratio_low_freq : float | "infer", optional
         The ratio_low_freq will be used to determine the number of the FMs with
         low frequencies. Indeed, the ratio_low_freq * sqrt(number of spots) low
-        frequecy FMs will be calculated. If 'infer', the ratio_low_freq will be
+        frequency FMs will be calculated. If 'infer', the ratio_low_freq will be
         set to 1.0. The default is 'infer'.
     ratio_high_freq: float | 'infer', optional
         The ratio_high_freq will be used to determine the number of the FMs with
         high frequencies. Indeed, the ratio_high_freq * sqrt(number of spots) 
-        high frequecy FMs will be calculated. If 'infer', the ratio_high_freq 
+        high frequency FMs will be calculated. If 'infer', the ratio_high_freq
         will be set to 0. The default is 'infer'.
     ratio_neighbors: float | 'infer', optional
         The ratio_neighbors will be used to determine the number of neighbors
-        when contruct the KNN graph by spatial coordinates. Indeed, ratio_neig-
-        hobrs * sqrt(number of spots) / 2 indicates the K. If 'infer', the para
+        when construct the KNN graph by spatial coordinates. Indeed, ratio_neighobrs *
+        sqrt(number of spots) / 2 indicates the K. If 'infer', the para
         will be set to 1.0. The default is 'infer'.
     spatial_info : list | tupple | str, optional
         The column names of spaital coordinates in adata.obs_keys() or 
         key in adata.obsm_keys. The default is ['array_row','array_col'].
     return_freq_domain : bool, optional
-        Whether need to return gene signals in frequency domain. The default is 
+        Whether you need to return gene signals in frequency domain. The default is
         True.
     normalize_lap : bool, optional
-        Whether need to normalize laplacian matrix. The default is false.
+        Whether you need to normalize laplacian matrix. The default is false.
     filter_peaks: bool, optional
         For calculated vectors/signals in frequency/spectral domian, whether
         filter low peaks to stress the important peaks. The default is False.
@@ -489,12 +472,12 @@ def calculate_frequcncy_domain(adata,
     if ratio_low_freq == 'infer':
         num_low_frequency = int(np.ceil(np.sqrt(adata.shape[0])))
     else:
-        num_low_frequency = int(np.ceil(np.sqrt(adata.shape[0]) * \
+        num_low_frequency = int(np.ceil(np.sqrt(adata.shape[0]) *
                                         ratio_low_freq))
     if ratio_high_freq == 'infer':
         num_high_frequency = int(np.ceil(np.sqrt(adata.shape[0])))
     else:
-        num_high_frequency = int(np.ceil(np.sqrt(adata.shape[0]) * \
+        num_high_frequency = int(np.ceil(np.sqrt(adata.shape[0]) *
                                          ratio_high_freq))
     if adata.shape[0] >= 10000:
         num_high_frequency = int(np.ceil(np.sqrt(adata.shape[0])))
@@ -502,7 +485,7 @@ def calculate_frequcncy_domain(adata,
     if ratio_neighbors == 'infer':
         num_neighbors = int(np.ceil(np.sqrt(adata.shape[0]) / 2))
     else:
-        num_neighbors = int(np.ceil(np.sqrt(adata.shape[0]) / 2 \
+        num_neighbors = int(np.ceil(np.sqrt(adata.shape[0]) / 2
                                     * ratio_neighbors))
     if adata.shape[0] <= 500:
         num_neighbors = 4
@@ -511,7 +494,7 @@ def calculate_frequcncy_domain(adata,
     adata.var_names_make_unique()
     sc.pp.filter_genes(adata, min_cells=1)
 
-    # ************** Construct graph and corresponding matrixs ****************
+    # ************** Construct graph and corresponding matrix ****************
     lap_mtx = get_laplacian_mtx(adata, num_neighbors=num_neighbors,
                                 spatial_key=spatial_info,
                                 normalization=normalize_lap)
@@ -520,42 +503,40 @@ def calculate_frequcncy_domain(adata,
     np.random.seed(123)
     if num_high_frequency > 0:
         # Fourier modes of low frequency
-        eigvals_s, eigvecs_s = ss.linalg.eigsh(lap_mtx.astype(float),
-                                               k=num_low_frequency,
-                                               which='SM')
+        eig_vals_s, eig_vecs_s = ss.linalg.eigsh(lap_mtx.astype(float),
+                                                 k=num_low_frequency,
+                                                 which='SM')
         # Fourier modes of high frequency    
         eigvals_l, eigvecs_l = ss.linalg.eigsh(lap_mtx.astype(float),
                                                k=num_high_frequency,
                                                which='LM')
-        eigvals = np.concatenate((eigvals_s, eigvals_l))  # eigenvalues
-        eigvecs = np.concatenate((eigvecs_s, eigvecs_l), axis=1)  # eigenvectors
+        eig_vals = np.concatenate((eig_vals_s, eigvals_l))  # eigenvalues
+        eig_vecs = np.concatenate((eig_vecs_s, eigvecs_l), axis=1)  # eigenvectors
     else:
-        eigvals_s, eigvecs_s = ss.linalg.eigsh(lap_mtx.astype(float),
-                                               k=num_low_frequency,
-                                               which='SM')
-        eigvecs = eigvecs_s
-        eigvals = eigvals_s
+        eig_vals_s, eig_vecs_s = ss.linalg.eigsh(lap_mtx.astype(float),
+                                                 k=num_low_frequency,
+                                                 which='SM')
+        eig_vecs = eig_vecs_s
+        eig_vals = eig_vals_s
 
     # ************************Graph Fourier Tranform***************************
     # Calculate GFT
-    eigvecs = eigvecs.transpose()
-    # if not ss.issparse(adata.X):
-    #     exp_mtx = preprocessing.scale(adata.X, axis=1)
-    # else:
-    #     exp_mtx = preprocessing.scale(adata.X.toarray(), axis=1)
+    eig_vecs = eig_vecs.transpose()
+
     if not ss.issparse(adata.X):
         exp_mtx = adata.X.copy()
     else:
         exp_mtx = adata.X.toarray().copy()
     exp_mtx = preprocessing.scale(exp_mtx, axis=0)
-    frequency_array = np.matmul(eigvecs, exp_mtx)
+    frequency_array = np.matmul(eig_vecs, exp_mtx)
     # Filter noise peaks
-    if filter_peaks == True:
+    if filter_peaks:
         frequency_array_thres = np.median(frequency_array, axis=0)
         for j in range(adata.shape[1]):
             frequency_array[frequency_array[:, j] <= \
                             frequency_array_thres[j], j] = 0
-    # Spectral domian normalization
+
+    # Spectral domain normalization
     frequency_array = preprocessing.normalize(frequency_array,
                                               norm='l1', axis=0)
 
@@ -566,12 +547,7 @@ def calculate_frequcncy_domain(adata,
                                       + ['high_spec_' + str(high) \
                                          for high in range(1, num_high_frequency + 1)])
     adata.varm['freq_domain'] = frequency_df.transpose()
-    adata.uns['frequencies'] = eigvals
-
-    # tmp_adata = sc.AnnData(adata.varm['freq_domain'])
-    # sc.pp.neighbors(tmp_adata, use_rep='X')
-    # sc.tl.umap(tmp_adata)
-    # adata.varm['gft_umap'] = tmp_adata.obsm['X_umap']
+    adata.uns['frequencies'] = eig_vals
 
     if return_freq_domain:
         return frequency_df
@@ -591,30 +567,30 @@ def freq2umap(adata,
     Parameters
     ----------
     adata : AnnData
-        adata.X is the normalized count matrix. Besides, the spatial coordinat-
-        es could be found in adata.obs or adata.obsm.
+        adata.X is the normalized count matrix. Besides, the spatial coordinates could be
+        found in adata.obs or adata.obsm.
     ratio_low_freq : float | "infer", optional
         The ratio_low_freq will be used to determine the number of the FMs with
         low frequencies. Indeed, the ratio_low_freq * sqrt(number of spots) low
-        frequecy FMs will be calculated. If 'infer', the ratio_low_freq will be
+        frequency FMs will be calculated. If 'infer', the ratio_low_freq will be
         set to 1.0. The default is 'infer'.
     ratio_high_freq: float | 'infer', optional
         The ratio_high_freq will be used to determine the number of the FMs with
         high frequencies. Indeed, the ratio_high_freq * sqrt(number of spots) 
-        high frequecy FMs will be calculated. If 'infer', the ratio_high_freq 
+        high frequency FMs will be calculated. If 'infer', the ratio_high_freq
         will be set to 0. The default is 'infer'.
     ratio_neighbors: float | 'infer', optional
         The ratio_neighbors will be used to determine the number of neighbors
-        when contruct the KNN graph by spatial coordinates. Indeed, ratio_neig-
-        hobrs * sqrt(number of spots) / 2 indicates the K. If 'infer', the para
-        will be set to 1.0. The default is 'infer'.
-    spatial_info : list | tupple | str, optional
-        The column names of spaital coordinates in adata.obs_keys() or 
+        when construct the KNN graph by spatial coordinates. Indeed, ratio_neighbors *
+        sqrt(number of spots) / 2 indicates the K.
+        If 'infer', the para will be set to 1.0. The default is 'infer'.
+    spatial_info : list | tuple | str, optional
+        The column names of spatial coordinates in adata.obs_keys() or
         in adata.obsm_keys. The default is ['array_row','array_col'].
     normalize_lap : bool, optional
-        Whether need to normalize laplacian matrix. The default is false.
+        Whether you need to normalize laplacian matrix. The default is false.
     filter_peaks: bool, optional
-        For calculated vectors/signals in frequency/spectral domian, whether
+        For calculated vectors/signals in frequency/spectral domain, whether
         filter low peaks to stress the important peaks. The default is False.
 
     """
@@ -626,29 +602,23 @@ def freq2umap(adata,
         tmp_adata.uns.pop('log1p')
     tmp_adata.X = adata.raw[:, adata.var_names].X
     sc.pp.log1p(tmp_adata)
-    calculate_frequcncy_domain(tmp_adata,
-                               ratio_low_freq=ratio_low_freq,
-                               ratio_high_freq=ratio_high_freq,
-                               ratio_neighbors=ratio_neighbors,
-                               spatial_info=spatial_info,
-                               filter_peaks=filter_peaks,
-                               normalize_lap=normalize_lap,
-                               return_freq_domain=False)
+    calculate_frequency_domain(tmp_adata, ratio_low_freq=ratio_low_freq, ratio_high_freq=ratio_high_freq,
+                               ratio_neighbors=ratio_neighbors, spatial_info=spatial_info, return_freq_domain=False,
+                               normalize_lap=normalize_lap, filter_peaks=filter_peaks)
     adata.varm['gft_umap_svg'] = tmp_adata.varm['gft_umap']
 
 
-def identify_tissue_module(adata,
-                           svg_list='infer',
-                           ratio_fms='infer',
-                           ratio_neighbors=2,
-                           spatial_info=['array_row', 'array_col'],
-                           n_neighbors=15,
-                           resolution=1,
-                           weight_by_freq=False,
-                           normalize_lap=False,
-                           random_state=0,
-                           algorithm='louvain',
-                           **kwargs):
+def _identify_tissue_module(adata,
+                            svg_list='infer',
+                            ratio_fms='infer',
+                            ratio_neighbors=2,
+                            spatial_info=['array_row', 'array_col'],
+                            n_neighbors=15,
+                            resolution=1,
+                            weight_by_freq=False,
+                            normalize_lap=False,
+                            random_state=0,
+                            **kwargs):
     """
     After identifying spatially variable genes, this function will group these
     spatially variable genes sharing common spatial patterns.
@@ -656,45 +626,42 @@ def identify_tissue_module(adata,
     Parameters
     ----------
     adata : AnnData
-        adata.X is the normalized count matrix. Besides, the spatial coordinat-
-        es could be found in adata.obs or adata.obsm.
+        adata.X is the normalized count matrix. Besides, the spatial coordinates
+         could be found in adata.obs or adata.obsm.
     svg_list : list, optional
-        The genes in svg_list will be grouped based on spatial patterns. The 
+        The genes in svg_list will be grouped based on spatial patterns. The
         default is 'infer'.
     ratio_fms : float, optional
         The ratio_fms will be used to determine the number of the FMs with
         low frequencies. Indeed, the ratio_fms * sqrt(number of spots) low
-        frequecy FMs will be calculated. If 'infer', the ratio_low_freq will be
+        frequency FMs will be calculated. If 'infer', the ratio_low_freq will be
         determined automatically. The default is 'infer'.
     ratio_neighbors: float | 'infer', optional
         The ratio_neighbors will be used to determine the number of neighbors
-        when contruct the KNN graph by spatial coordinates. Indeed, ratio_neig-
-        hobrs * sqrt(number of spots) / 2 indicates the K. If 'infer', the para
+        when construct the KNN graph by spatial coordinates. Indeed, ratio_neighobrs *
+        sqrt(number of spots) / 2 indicates the K. If 'infer', the para
         will be set to 2.0. The default is 2.
-    spatial_info : list | tupple | str, optional
-        The column names of spaital coordinates in adata.obs_keys() or 
+    spatial_info : list | tuple | str, optional
+        The column names of spatial coordinates in adata.obs_keys() or
         in adata.obsm_keys. The default is ['array_row','array_col'].
     n_neighbors : int, optional
-        The neighbors in gene similarity graph to perform louvain/leiden algorithm. 
+        The neighbors in gene similarity graph to perform louvain algorithm.
         The default is 15.
-    resolution : float | list | tupple, optional
-        The resolution parameter in louvain/leiden algorithm. If resolution is float,
+    resolution : float | list | tuple, optional
+        The resolution parameter in louvain algorithm. If resolution is float,
         resolution will be used directly. If resolution is a list, each value
-        in this list will be used and the best value will be determined 
-        automically. If resolution is tupple, it should be (start, end, step),
+        in this list will be used and the best value will be determined
+        automatically. If resolution is tuple, it should be (start, end, step),
         and it is similar to a list. The default is 1.
     weight_by_freq : bool, optional
-        Whether need to weight FC according to freqs. The default is False.
+        Whether you need to weight FC according to freqs. The default is False.
     normalize_lap : bool, optional
-        Whether need to normalize laplacian matrix. The default is false.
+        Whether you need to normalize laplacian matrix. The default is false.
     random_state : int, optional
         The randomstate. The default is 0.
-    algorithm : str, optional
-        The used clustering algorithm. Options are 'louvain' or 'leiden'.
-        The default is 'louvain'.
-    **kwargs : kwargs 
-        The parameters used in louvain/leiden algorithm and user can seek help in 
-        sc.tl.louvain/sc.tl.leiden.
+    **kwargs : kwargs
+        The parameters used in louvain algorithms and user can seek help in
+        sc.tl.louvain.
 
     Returns
     -------
@@ -702,25 +669,27 @@ def identify_tissue_module(adata,
         The tissue module information after identification.
 
     """
-    # Find tissue module by grouping Spatially variable genes with similar 
-    # spatial patterns acoording to louvain/leiden algorithm.
+    # Find tissue module by grouping Spatially variable genes with similar
+    # spatial patterns according to louvain algorithm.
     # Check conditions and determine parameters
     if isinstance(resolution, float) or isinstance(resolution, int):
         single_resolution = True
     else:
         single_resolution = False
+
     if isinstance(resolution, tuple) and len(resolution) == 3:
         start, end, step = resolution
         resolution = np.arange(start, end, step).tolist()
     elif isinstance(resolution, tuple):
         raise ValueError("""when resolution is a tuple, it should be 
                          (start, end, step)""")
+
     if isinstance(resolution, np.ndarray):
         resolution = resolution.tolist()
-    
-    assert isinstance(resolution, float) or isinstance(resolution, int) \
-        or isinstance(resolution, list), \
-            'please input resolution with type of float, int, list or tupple'
+
+    # assert isinstance(resolution, float) or isinstance(resolution, int) \
+    #        or isinstance(resolution, list), \
+    #     'please input resolution with type of float, int, list or tuple'
 
     if 'svg_rank' not in adata.var.columns:
         assert KeyError("adata.var['svg_rank'] is not available. Please run\
@@ -742,20 +711,17 @@ def identify_tissue_module(adata,
     if 'log1p' in adata.uns_keys():
         tmp_adata.uns.pop('log1p')
     tmp_adata.X = adata[:, svg_list].X.copy()
-    calculate_frequcncy_domain(tmp_adata,
-                               ratio_low_freq=ratio_fms,
-                               ratio_high_freq=0,
-                               ratio_neighbors=ratio_neighbors,
-                               spatial_info=spatial_info,
-                               filter_peaks=False,
-                               return_freq_domain=False,
-                               normalize_lap=normalize_lap)
+    calculate_frequency_domain(tmp_adata, ratio_low_freq=ratio_fms, ratio_high_freq=0, ratio_neighbors=ratio_neighbors,
+                               spatial_info=spatial_info, return_freq_domain=False, normalize_lap=normalize_lap,
+                               filter_peaks=False)
+
     # Create new anndata to store freq domain information
     gft_adata = sc.AnnData(tmp_adata.varm['freq_domain'])
     if weight_by_freq:
         weight_list = 1 / (1 + 0.01 * tmp_adata.uns['frequencies'])
         gft_adata.X = np.multiply(gft_adata.X, weight_list)
         gft_adata.X = preprocessing.normalize(gft_adata.X, norm='l1')
+
     # clustering
     gft_adata = gft_adata[svg_list, :]
     adata.uns['detect_TM_data'] = {}
@@ -767,54 +733,43 @@ def identify_tissue_module(adata,
     else:
         sc.pp.neighbors(gft_adata, n_neighbors=n_neighbors, use_rep='X')
 
-    clustering_alg = None
-    if algorithm == 'louvain':
-        clustering_alg = sc.tl.louvain
-    elif algorithm == 'leiden':
-        clustering_alg = sc.tl.leiden
-    else:
-        raise ValueError("""unknown clustering algorithm chosen""")
-
-    # Determining the resolution data type, if resolution is the type of list, 
+    # Determining the resolution data type, if resolution is the type of list,
     # we will select the optimal resolution
     if isinstance(resolution, list):
         all_tms = None
         tm_df = None
-        # The minimum value of cosine similarity of overlap: 
+        # The minimum value of cosine similarity of overlap:
         # count_tms_select_cs_score
         count_tms_select_cs_score = 1
         best_resolution = None
         overlap_scores = {}
-        # Iterate through the list of resolution and calculate the 
+        # Iterate through the list of resolution and calculate the
         # clustering results
-        from tqdm import tqdm
-        resolution_tqdm = tqdm(resolution, desc='resolution')
-        # for resolution_index, resolution_value in enumerate(resolution):
-        for resolution_index, resolution_value in enumerate(resolution_tqdm):
+        for resolution_index, resolution_value in enumerate(resolution):
             gft_adata_current = gft_adata.copy()
-            clustering_alg(gft_adata_current, resolution=resolution_value,
+            sc.tl.louvain(gft_adata_current, resolution=resolution_value,
                           random_state=random_state, **kwargs,
-                          key_added='clustering')
+                          key_added='louvain')
 
-            gft_adata_current.obs.clustering = [str(eval(i_tm) + 1) for i_tm in \
-                                       gft_adata_current.obs.clustering.tolist()]
-            gft_adata_current.obs.clustering = \
-                pd.Categorical(gft_adata_current.obs.clustering)
+            gft_adata_current.obs.louvain = [str(eval(i_tm) + 1) for i_tm in \
+                                             gft_adata_current.obs.louvain.tolist()]
+            gft_adata_current.obs.louvain = \
+                pd.Categorical(gft_adata_current.obs.louvain)
 
             # tm pseudo expression
-            all_tms_current = gft_adata_current.obs.clustering.cat.categories
+            all_tms_current = gft_adata_current.obs.louvain.cat.categories
             tm_df_current = pd.DataFrame(0, index=tmp_adata.obs_names,
                                          columns='tm_' + all_tms_current)
             # Calculate the clustering of each tm
             for tm in all_tms_current:
                 pseudo_exp = tmp_adata[:,
-                             gft_adata_current.obs.clustering\
-                    [gft_adata_current.obs.clustering == tm].index].X.sum(axis=1)
-                pseudo_exp = np.ravel(pseudo_exp) # tmp_adata = None
+                             gft_adata_current.obs.louvain[gft_adata_current.obs.louvain ==
+                                                           tm].index].X.sum(axis=1)
+                pseudo_exp = np.ravel(pseudo_exp)  # tmp_adata = None
                 # Calculate the clustering results
                 predict_tm = KMeans(n_clusters=2,
-                                    random_state=random_state).fit_predict\
-                                    (pseudo_exp.reshape(-1, 1))
+                                    random_state=random_state).fit_predict \
+                    (pseudo_exp.reshape(-1, 1))
 
                 # Correct clustering results
                 pseudo_exp_median = np.median(pseudo_exp)
@@ -823,54 +778,52 @@ def identify_tissue_module(adata,
 
                 cluster_middle_param = sum(abs(predict_tm - \
                                                pseudo_exp_cluster))
-                cluster_middle_param_reverse = sum(abs(predict_tm -\
-                                                abs(pseudo_exp_cluster - 1)))
+                cluster_middle_param_reverse = sum(abs(predict_tm - \
+                                                       abs(pseudo_exp_cluster - 1)))
                 if cluster_middle_param > cluster_middle_param_reverse:
                     predict_tm = abs(predict_tm - 1)
                 tm_df_current['tm_' + str(tm)] = predict_tm
-                
+
             # Correct cosine similarity of overlap for clustering results
             overlap_cs_score = get_overlap_cs_core(tm_df_current.values.T)
-            # print("""resolution: %.3f;  """%resolution_value +\
-            #       """score: %.4f"""%overlap_cs_score)
-            resolution_tqdm.set_postfix(score=overlap_cs_score)
-            overlap_scores['res_' + '%.3f'%resolution_value] = \
+            print("""resolution: %.3f;  """ % resolution_value + \
+                  """score: %.4f""" % overlap_cs_score)
+            overlap_scores['res_' + '%.3f' % resolution_value] = \
                 np.round(overlap_cs_score * 1e5) / 1e5
             # select the optimal resolution
             if count_tms_select_cs_score > overlap_cs_score or \
-                resolution_index == 0:
+                    resolution_index == 0:
                 count_tms_select_cs_score = overlap_cs_score
                 best_resolution = resolution_value
             resolution = best_resolution
-            # print("Used resolution: \t", resolution)
 
     # Next, clustering genes for given resolution
-    clustering_alg(gft_adata, resolution=resolution, random_state=random_state,
-                  **kwargs, key_added='clustering')
+    sc.tl.louvain(gft_adata, resolution=resolution, random_state=random_state,
+                  **kwargs, key_added='louvain')
     sc.tl.umap(gft_adata)
     adata.uns['detect_TM_data']['gft_umap_tm'] = \
-                                        pd.DataFrame(gft_adata.obsm['X_umap'],
-                                        index=gft_adata.obs.index,
-                                        columns=['UMAP_1', 'UMAP_2'])
+        pd.DataFrame(gft_adata.obsm['X_umap'],
+                     index=gft_adata.obs.index,
+                     columns=['UMAP_1', 'UMAP_2'])
     gft_adata.uns['gft_genes_tm'] = [str(eval(i_tm) + 1) for i_tm in \
-                                     gft_adata.obs.clustering.tolist()]
-    gft_adata.obs.clustering = [str(eval(i_tm) + 1) for i_tm in \
-                             gft_adata.obs.clustering.tolist()]
-    gft_adata.obs.clustering = pd.Categorical(gft_adata.obs.clustering)
+                                     gft_adata.obs.louvain.tolist()]
+    gft_adata.obs.louvain = [str(eval(i_tm) + 1) for i_tm in \
+                             gft_adata.obs.louvain.tolist()]
+    gft_adata.obs.louvain = pd.Categorical(gft_adata.obs.louvain)
     adata.var['tissue_module'] = 'None'
-    adata.var.loc[gft_adata.obs_names, 'tissue_module'] = gft_adata.obs.clustering
+    adata.var.loc[gft_adata.obs_names, 'tissue_module'] = gft_adata.obs.louvain
     adata.var['tissue_module'] = pd.Categorical(adata.var['tissue_module'])
     # tm pseudo expression
-    all_tms = gft_adata.obs.clustering.cat.categories
+    all_tms = gft_adata.obs.louvain.cat.categories
     tm_df = pd.DataFrame(0, index=adata.obs_names, columns='tm_' + all_tms)
     pseudo_df = pd.DataFrame(0, index=adata.obs_names, columns='tm_' + all_tms)
     for tm in all_tms:
         pseudo_exp = tmp_adata[:,
-                     gft_adata.obs.clustering[gft_adata.obs.clustering == tm].index]\
+                     gft_adata.obs.louvain[gft_adata.obs.louvain == tm].index] \
             .X.sum(axis=1)
         pseudo_exp = np.ravel(pseudo_exp)
         pseudo_df['tm_' + str(tm)] = pseudo_exp.copy()
-        predict_tm = KMeans(n_clusters=2, random_state=random_state)\
+        predict_tm = KMeans(n_clusters=2, random_state=random_state) \
             .fit_predict(pseudo_exp.reshape(-1, 1))
 
         pseudo_exp_median = np.median(pseudo_exp)
@@ -890,10 +843,10 @@ def identify_tissue_module(adata,
     adata.obsm['tm_binary'] = tm_df.copy()
     # obtain freq signal
     freq_signal_tm_df = pd.DataFrame(0, index=tm_df.columns,
-                                columns=tmp_adata.varm['freq_domain'].columns)
+                                     columns=tmp_adata.varm['freq_domain'].columns)
 
     for tm in all_tms:
-        tm_gene_list = gft_adata.obs.clustering[gft_adata.obs.clustering == tm].index
+        tm_gene_list = gft_adata.obs.louvain[gft_adata.obs.louvain == tm].index
         freq_signal = tmp_adata.varm['freq_domain'].loc[tm_gene_list,
                       :].sum(axis=0)
         freq_signal = np.abs(freq_signal)
@@ -901,15 +854,15 @@ def identify_tissue_module(adata,
         freq_signal_tm_df.loc['tm_' + tm, :] = freq_signal
     adata.uns['detect_TM_data']['freq_signal_tm'] = freq_signal_tm_df
     adata.uns['detect_TM_data']['low_freq_domain_svg'] = \
-                                        pd.DataFrame(gft_adata.X.copy(),
-                                        index=gft_adata.obs_names,
-                                        columns=['low_freq_' + str(i + 1) \
-                                        for i in range(gft_adata.shape[1])])
+        pd.DataFrame(gft_adata.X.copy(),
+                     index=gft_adata.obs_names,
+                     columns=['low_freq_' + str(i + 1) \
+                              for i in range(gft_adata.shape[1])])
     if not single_resolution:
         adata.uns['detect_TM_data']['overlap_curve'] = \
             pd.DataFrame(overlap_scores,
                          index=['score'])
         adata.uns['detect_TM_data']['overlap_curve'] = \
             adata.uns['detect_TM_data']['overlap_curve'].transpose()
-        
-    return adata.var.loc[svg_list, :].copy(), adata 
+
+    return adata.var.loc[svg_list, :].copy(), adata
