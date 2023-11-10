@@ -18,7 +18,6 @@ spg_version = "SpaGFT 0.1.2"
 sc.settings.verbosity = 1
 sc.settings.set_figure_params(dpi_save=600, facecolor="white")
 
-
 ### ____________________________________________________________________________
 ### Utilities
 class OmicsType(Enum):

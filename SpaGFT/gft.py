@@ -10,7 +10,6 @@ from SpaGFT_1110.utils import test_significant_freq, get_overlap_cs_core
 
 warnings.filterwarnings("ignore")
 
-
 def low_pass_enhancement(adata,
                          ratio_low_freq='infer',
                          ratio_neighbors='infer',

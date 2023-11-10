@@ -8,7 +8,6 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.neighbors import kneighbors_graph
 
-
 def get_laplacian_mtx(adata,
                       num_neighbors=6,
                       spatial_key=['array_row', 'array_col'],

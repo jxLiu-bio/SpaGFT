@@ -11,7 +11,6 @@ from matplotlib.gridspec import GridSpec
 from plotnine import *
 from sklearn import preprocessing
 
-
 def gene_freq_signal(adata,
                      gene,
                      domain='freq_domain_svg',
