@@ -17,5 +17,3 @@ import scanpy as sc
 adata = sc.read_visium(path_to_visium_dataset)
 ```
 For all spatial transcriptomics datasets, it should be pointed out that raw count matrix needs to be found at _adata.X_ and the spatial coordinate information needs to be found at _adata.obs_ or _adata.obsm_
-
-

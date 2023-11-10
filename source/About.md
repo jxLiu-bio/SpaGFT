@@ -8,6 +8,7 @@ simultaneously. _SpaGFT_ can transform complex spatial patterns into one-dimensi
 
 ![](./images/overall_replace.png)
 
+
 ### SpaGFT's functions
 - Transform gene expression to FCs.
 

@@ -21,7 +21,7 @@ SpaGFT : Graph fourier transformer for representation, analysis, and interpretat
    spatial/lymphnode_tutorial
    spatial/Machine_Learning_Model_Improvement
    Spg Script
-   
+
 
 
 
