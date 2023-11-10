@@ -5,16 +5,18 @@ build:
   apt_packages:
     - cmake
     - g++
-  python:
+  tools:
+    python:
+      version: 3.7
 
-    version: 3.7
-
-    install:
-
-      - requirements: source/requirements.txt
 
 sphinx:
 
   configuration:  source/conf.py
 
 formats: all
+
+python:
+  version: 3.7
+  install:
+    - requirements: source/requirements.txt
