@@ -1,12 +1,15 @@
-import networkx as nx
 import numpy as np
 import pandas as pd
 import scanpy as sc
+from scipy.spatial.distance import pdist, squareform
+import itertools
 import scipy.sparse as ss
 from sklearn import preprocessing
-from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
 from sklearn.neighbors import kneighbors_graph
+import networkx as nx
+
 
 def get_laplacian_mtx(adata,
                       num_neighbors=6,
@@ -18,16 +21,16 @@ def get_laplacian_mtx(adata,
     Parameters
     ----------
     adata : AnnData
-        adata.X is the normalized count matrix. Besides, the spatial coordinates could be found in adata.obs or
-         adata.obsm.
+        adata.X is the normalized count matrix. Besides, the spatial coordinat-
+        es could be found in adata.obs or adata.obsm.
     num_neighbors: int, optional
-        The number of neighbors for each node/spot/pixel when construct the graph.
-        The default if 6.
+        The number of neighbors for each node/spot/pixel when contrcut graph. 
+        The defalut if 6.
     spatial_key=None : list | string
-        Get the coordinate information by adata.obsm[spatial_key] or adata.var[spatial_key].
-        The default is ['array_row', 'array_col'].
+        Get the coordinate information by adata.obsm[spaital_key] or 
+        adata.var[spatial_key]. The default is ['array_row', 'array_col'].
     normalization : bool, optional
-        Whether you need to normalize laplacian matrix. The default is False.
+        Whether need to normalize laplacian matrix. The default is False.
 
     Raises
     ------
@@ -38,8 +41,7 @@ def get_laplacian_mtx(adata,
     Returns
     -------
     lap_mtx : csr_matrix
-        The laplacian matrix or normalized laplacian matrix.
-        :param spatial_key:
+        The laplcaian matrix or mormalized laplcian matrix.
 
     """
     if spatial_key in adata.obsm_keys():
@@ -49,7 +51,7 @@ def get_laplacian_mtx(adata,
         adj_mtx = kneighbors_graph(adata.obs[spatial_key],
                                    n_neighbors=num_neighbors)
     else:
-        raise KeyError("%s is not avaliable in adata.obsm_keys" %
+        raise KeyError("%s is not avaliable in adata.obsm_keys" % \
                        spatial_key + " or adata.obs_keys")
 
     adj_mtx = nx.adjacency_matrix(nx.Graph(adj_mtx))
@@ -57,7 +59,7 @@ def get_laplacian_mtx(adata,
     deg_mtx = adj_mtx.sum(axis=1)
     deg_mtx = create_degree_mtx(deg_mtx)
     # Laplacian matrix
-    # Whether you need to normalize laplacian matrix
+    # Whether need to normalize laplcian matrix
     if not normalization:
         lap_mtx = deg_mtx - adj_mtx
     else:
@@ -68,8 +70,42 @@ def get_laplacian_mtx(adata,
     return lap_mtx
 
 
-def create_adjacent_mtx(coor_df,
-                        spatial_names=['array_row', 'array_col'],
+def find_HVGs(adata, norm_method=None, num_genes=2000):
+    """
+    Find spatialy variable genes.
+
+    Parameters
+    ----------
+    adata : AnnData
+        The object to save sequencing data.
+    norm_method : str | None, optional
+        The method used to normalized adata. The default is None.
+    num_genes : None | int, optional
+        The number of highly variable genes. The default is 2000.
+
+    Returns
+    -------
+    HVG_list : list
+        Highly variable genes.
+
+    """
+    # Normalization
+    if norm_method == "CPM":
+        sc.pp.normalize_total(adata, target_sum=1e5)
+        # log-transform
+        sc.pp.log1p(adata)
+    else:
+        pass
+    # Find high variable genes using sc.pp.highly_variable_genes() with default 
+    # parameters
+    sc.pp.highly_variable_genes(adata, n_top_genes=num_genes)
+    HVG_list = adata.var.index[adata.var.highly_variable]
+    HVG_list = list(HVG_list)
+
+    return HVG_list
+
+
+def create_adjacent_mtx(coor_df, spatial_names=['array_row', 'array_col'],
                         num_neighbors=4):
     # Transform coordinate dataframe to coordinate array
     coor_array = coor_df.loc[:, spatial_names].values
@@ -112,7 +148,7 @@ def create_degree_mtx(diag):
 
 
 def gene_clustering_kMeans(frequency_array, n_clusters, reduction=50):
-    # Normalization
+    # Normlization
     frequency_array = preprocessing.StandardScaler().fit_transform(frequency_array)
 
     # Dimension reduction
@@ -126,10 +162,9 @@ def gene_clustering_kMeans(frequency_array, n_clusters, reduction=50):
     return kmeans_model.labels_
 
 
-def _window_side_bin(adata,
-                     shape=(20, 20),
-                     spatial_names=['array_row', 'array_col'],
-                     sparse=True):
+def window_side_bin(adata, shape=(20, 20),
+                    spatial_names=['array_row', 'array_col'],
+                    sparse=True):
     # Extract border
     max_x = adata.obs[spatial_names[1]].max()
     min_x = adata.obs[spatial_names[1]].min()
@@ -170,7 +205,7 @@ def _window_side_bin(adata,
 
     # Transform it to anndata
     from anndata import AnnData
-    if sparse:
+    if sparse == True:
         from scipy import sparse
         new_adata = AnnData(sparse.coo_matrix(count_mtx))
         new_adata.obs_names = count_mtx.index.tolist()
@@ -183,16 +218,17 @@ def _window_side_bin(adata,
     return new_adata
 
 
-def _select_svg_normal(gene_score, num_sigma=1):
+def select_svg_normal(gene_score, num_sigma=1):
     mu = np.mean(gene_score['gft_score'])
     sigma = np.std(gene_score['gft_score'])
     gene_score['spatially_variable'] = 0
-    gene_score.loc[gene_score['gft_score'] > mu + num_sigma * sigma, 'spatially_variable'] = 1
+    gene_score.loc[gene_score['gft_score'] > mu + num_sigma * sigma,
+                   'spatially_variable'] = 1
 
     return gene_score
 
 
-def _select_svg_kmeans(gene_score):
+def select_svg_kmean(gene_score):
     from sklearn.cluster import KMeans
     kmeans = KMeans(n_clusters=2)
     X = gene_score["smooth_score"].tolist()
@@ -203,7 +239,7 @@ def _select_svg_kmeans(gene_score):
     return gene_score
 
 
-def umap_spectral_domain(frequency_array, gene_score):
+def umap_spectral_domain(frequency_array, gene_score, n_dim=2):
     adata_gene = sc.AnnData(frequency_array).T
     sc.pp.pca(adata_gene)
     sc.pp.neighbors(adata_gene)
@@ -214,7 +250,7 @@ def umap_spectral_domain(frequency_array, gene_score):
     sc.pl.umap(adata_gene, color='spatially_variable')
 
 
-def tsne_spectral_domain(frequency_array, gene_score):
+def tsne_spectral_domain(frequency_array, gene_score, n_dims=2):
     adata_gene = sc.AnnData(frequency_array).T
     sc.pp.pca(adata_gene)
     sc.pp.neighbors(adata_gene)
@@ -234,7 +270,7 @@ def fms_spectral_domain(frequency_array, gene_score, n_dims=2):
     sc.pl.pca(adata_gene, color='spatially_variable')
 
 
-def pca_spatial_domain(adata, gene_score):
+def pca_spatial_domain(adata, gene_score, n_dims=2):
     adata_gene = adata.copy()
     adata_gene = adata_gene.T
     gene_score = select_svg_normal(gene_score, num_sigma=1)
@@ -245,7 +281,7 @@ def pca_spatial_domain(adata, gene_score):
     sc.pl.pca(adata_gene, color='spatially_variable')
 
 
-def umap_spatial_domain(adata, gene_score):
+def umap_spatial_domain(adata, gene_score, n_dim=2):
     adata_gene = adata.copy()
     adata_gene = adata_gene.T
     gene_score = select_svg_normal(gene_score, num_sigma=1)
@@ -258,7 +294,7 @@ def umap_spatial_domain(adata, gene_score):
     sc.pl.umap(adata_gene, color='spatially_variable')
 
 
-def tsne_spatial_domain(adata, gene_score):
+def tsne_spatial_domain(adata, gene_score, n_dim=2):
     adata_gene = adata.copy()
     adata_gene = adata_gene.T
     gene_score = select_svg_normal(gene_score, num_sigma=1)
@@ -347,11 +383,101 @@ def correct_pvalues_for_multiple_testing(pvalues,
     return new_pvalues
 
 
+def permutation_signal(signal_array, num_permutaion=1000):
+    """
+    Permutate gene signals in spatial domain randomly.
+
+    Parameters
+    ----------
+    signal_array : list | array
+        A one-dimensional array indicate gene expression on all spots.
+    num_permutaion : int, optional
+        The number of permutation. The default is 1000.
+
+    Returns
+    -------
+    total_signals : array
+        The permutaed gene expression signals.
+
+    """
+    signal_array = np.array(signal_array)
+    total_signals = signal_array * np.ones((num_permutaion,
+                                            len(signal_array)))
+
+    for i in range(num_permutaion):
+        total_signals[i, :] = np.random.permutation(total_signals[i, :])
+
+    return total_signals
+
+
+def significant_test_permutation(exp_mtx,
+                                 gene_score,
+                                 eigvals,
+                                 eigvecs_T,
+                                 num_permutaion=1000,
+                                 num_pool=200,
+                                 spec_norm='l1'):
+    """
+    To calculate p values for genes, permutate gene expression data and 
+    calculate p values.
+
+    Parameters
+    ----------
+    exp_mtx : 2D-array
+        The count matrix of gene expresssion. (spots * genes)
+    gene_score : 1D-array
+        The calculated gene scores. 
+    eigvals : array
+        The eigenvalues of Laplacian matrix.
+    eigvecs_T : array
+        The eigenvectors of Laplacian matrix.
+    num_permutaion : int, optional
+        The number of permutations. The default is 1000.
+    num_pool : int, optional
+        The cores used for umltiprocess calculation to accelerate speed. The 
+        default is 200.
+    spec_norm : str, optional
+        The method to normalize graph signals in spectral domain. The default 
+        is 'l1'.
+
+    Returns
+    -------
+    array
+        The calculated p values.
+
+    """
+    from multiprocessing.dummy import Pool as ThreadPool
+    from scipy.stats import mannwhitneyu
+
+    def _test_by_permutaion(gene_index):
+        (gene_index)
+        graph_signal = exp_mtx[gene_index, :]
+        total_signals = permutation_signal(signal_array=graph_signal,
+                                           num_permutaion=num_permutaion)
+        frequency_array = np.matmul(eigvecs_T, total_signals.transpose())
+        frequency_array = np.abs(frequency_array)
+        if spec_norm != None:
+            frequency_array = preprocessing.normalize(frequency_array,
+                                                      norm=spec_norm,
+                                                      axis=0)
+        score_list = np.matmul(2 ** (-1 * eigvals), frequency_array)
+        score_list = score_list / score_max
+        pval = mannwhitneyu(score_list, gene_score[gene_index], alternative='less').pvalue
+        return pval
+
+    score_max = np.matmul(2 ** (-2 * eigvals), (1 / len(eigvals)) * \
+                          np.ones(len(eigvals)))
+    gene_index_list = list(range(exp_mtx.shape[0]))
+    pool = ThreadPool(num_pool)
+    res = pool.map(_test_by_permutaion, gene_index_list)
+
+    return res
+
 def test_significant_freq(freq_array,
                           cutoff,
                           num_pool=200):
     """
-    Significance test by comparing the intensities in low frequency FMs and
+    Significance test by camparing the intensities in low frequency FMs and 
     in high frequency FMs. 
 
     Parameters
@@ -361,8 +487,8 @@ def test_significant_freq(freq_array,
     cutoff : int
         Watershed between low frequency signals and high frequency signals.
     num_pool : int, optional
-        The cores used for multiprocessing calculation to accelerate speed.
-        The default is 200.
+        The cores used for umltiprocess calculation to accelerate speed. The 
+        default is 200.
 
     Returns
     -------
@@ -370,7 +496,7 @@ def test_significant_freq(freq_array,
         The calculated p values.
 
     """
-    from scipy.stats import ranksums
+    from scipy.stats import wilcoxon, mannwhitneyu, ranksums, combine_pvalues
     from multiprocessing.dummy import Pool as ThreadPool
 
     def _test_by_feq(gene_index):
@@ -396,7 +522,6 @@ def test_significant_freq(freq_array,
     res = pool.map(_test_by_feq, gene_index_list)
 
     return res
-
 
 def my_eigsh(args_tupple):
     """
@@ -442,4 +567,4 @@ def get_overlap_cs_core(cluster_collection):
                 over_loop_cs_score += get_cos_similar(value, v1)
                 over_loop_cs_score_num += 1
     return (over_loop_cs_score / over_loop_cs_score_num / spot_shape) \
-        if over_loop_cs_score_num != 0 else 1
+           if over_loop_cs_score_num != 0 else 1
