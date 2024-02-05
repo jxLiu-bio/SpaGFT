@@ -9,7 +9,7 @@ Below is some example script usage. Run from project root:
 ```shell
 # usage: SpaGFT [-h] [-env] [-v] [-data PATH] [-o PATH] [-omcs {gene,protein}] [-org {Mouse,Human}] [-flp] [-fcnt] [-fnorm] [-flog] [-cell2loc PATH] [-clustering_alg ALG] [-fident_svos] [-fident_tms] [-fcmp_tm_clustering] [-save FNAME] [-gsvosum] [-gsvos PATH] [-gtmsum] [-gtms PATH]
 #
-# SpaGFT is a python package to analyze spatial transcriptomics data. It uses a hypothesis-free graph Fourier transform model to identify spatially variable genes/proteins, tissue modules (TM) and functional enrichment analysis to explore the underlying biological processes in these TMs.
+# SpaGFT is a python package to analyze spatial transcriptomics data. It uses a hypothesis-free graph Fourier transform model to identify spatially variable genes/proteins, tissue functional unit (TFU) and functional enrichment analysis to explore the underlying biological processes in these TMs.
 #
 # optional arguments:
 #   -h, --help            show this help message and exit
@@ -30,15 +30,15 @@ Below is some example script usage. Run from project root:
 #   -cell2loc PATH        augment dataset: add cell2location data specified in .csv file
 #   -clustering_alg ALG   specify the algorithm used for clustering tms
 #   -fident_svos          identify spatially variable omics
-#   -fident_tms           identify tissue modules
+#   -fident_tms           identify tissue functional unit
 #   -fcmp_tm_clustering   compare tm clustering with ground truth specified in the dataset annotations
 #   -save FNAME           save analyzed dataset to output directory with the given .h5ad filename
 #
 # graph:
 #   -gsvosum              graph the svo summary
 #   -gsvos PATH           graph selected svos specified in .csv file
-#   -gtmsum               graph the tissue module summary
-#   -gtms PATH            graph selected tissue modules specified in .csv file
+#   -gtmsum               graph the tissue functional unit summary
+#   -gtms PATH            graph selected tissue functional unit specified in .csv file
 
 python "./source/spatial/spg.py" -v
 python "./source/spatial/spg.py" -env
