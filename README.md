@@ -84,18 +84,6 @@ If users want to quit this virtual environment, just run ``` conda deactivate ``
 
 ## Install ```SpaGFT```
 
-### Approach 1: install ```SpaGFT``` by `pip`
-
-Users can install ```SpaGFT``` easily in this way by
-
-```bash
-pip install SpaGFT
-```
-
-Users can also install ```SpaGFT``` via Github if there exists any problems.
-
-### Approach 2: install ```SpaGFT``` via Github
-
 Before installing ```SpaGFT``` formally, the dependency packages should be installed.
 
 Users can install all dependencies by:
