@@ -105,7 +105,7 @@ Next, run
 python setup.py install
 ```
 
-### install jupyter (optional)
+### Install jupyter (optional)
 Note that we recommend [jupyter](https://jupyter.org/) for interactive usage. It can be installed and configured by
 
 ```bash
