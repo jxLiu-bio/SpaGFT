@@ -1,1 +1,1 @@
-SpaGFT is a python package to analyze tissue functions empowered using spatial omcis data.
+SpaGFT: Graph Fourier transform for spatial omics representation and analyses of complex organs.

@@ -85,7 +85,8 @@ def ftu_freq_signal(adata,
                     y_range=None,
                     xy_axis=True,
                     return_fig=False,
-                    save_path=None, **kwargs):
+                    save_path=None,
+                    **kwargs):
     if isinstance(ftu, str):
         # fig, ax = plt.subplots()
         plt.figure(figsize=figsize, dpi=dpi)
@@ -210,12 +211,12 @@ def gene_signal_umap(adata,
         The colors corresponding to svgs and non-svgs. 
         The default is ['#C71C1C', '#BEBEBE'].
     n_neighbors : int, optional
-        The neighbors when construst gene graph for umap.
+        The neighbors when construct gene graph for umap.
         The default is 15.
     random_state : int, optional
         The ramdom state. The default is 0.
     return_fig : bool, optional
-        Whether need to return figure. The default is False.
+        Whether you need to return figure. The default is False.
     save_path : system path | None, optional
         The path including filename to save the figure.
 
@@ -370,8 +371,6 @@ def _scatter_gene_distri(adata,
 def _umap_svg_cluster(adata,
                       svg_list=None,
                       size=None,
-                      cmap='magma',
-                      spatial_info=['array_row', 'array_col'],
                       coord_ratio=1,
                       return_plot=True):
     if svg_list == None:
@@ -1065,12 +1064,13 @@ def scatter_ftu(adata,
             return ax
     elif isinstance(ftu, list) or isinstance(ftu, np.ndarray):
         row = math.ceil(len(ftu) / 4)
-        fig = plt.figure(dpi=350,
+        fig = plt.figure(dpi=200,
                          constrained_layout=True,
                          figsize=(20, row * 5)
                          )
 
-        gs = GridSpec(row, 4,
+        gs = GridSpec(row,
+                      4,
                       figure=fig)
         # print(row, 4)
         ax_list = []

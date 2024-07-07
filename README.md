@@ -4,7 +4,7 @@
 
 </p>
 
-# SpaGFT: Spatial omics representation and functional tissue module inference using graph Fourier transform
+# SpaGFT: Graph Fourier transform for spatial omics representation and analyses of complex organs
 
 
 <img src="https://img.shields.io/badge/Platform-Linux-green"> <img src="https://img.shields.io/badge/Language-python3-green"> <img src="https://img.shields.io/badge/License-MIT-green"><img src="https://img.shields.io/badge/notebooks-passing-green"><img src="https://img.shields.io/badge/docs-passing-green">
@@ -52,8 +52,6 @@ scikit-learn==1.0.2
 scipy==1.8.0
 gseapy==0.10.8
 igraph==0.9.10
-# Note that in the current requirements there are two incorrectly
-# configured dependencies. So we need to manually specify them.
 chardet==5.1.0
 charset-normalizer==3.1.0
 ```
@@ -82,7 +80,14 @@ conda activate spagft_env
 
 If users want to quit this virtual environment, just run ``` conda deactivate ```
 
-## Install ```SpaGFT```
+### Install ```SpaGFT```
+
+#### Approach 1: Install from PyPI
+```bash
+pip install SpaGFT
+```
+
+#### Approach 2: Install from source
 
 Before installing ```SpaGFT``` formally, the dependency packages should be installed.
 
@@ -100,6 +105,7 @@ Next, run
 python setup.py install
 ```
 
+### install jupyter (optional)
 Note that we recommend [jupyter](https://jupyter.org/) for interactive usage. It can be installed and configured by
 
 ```bash
@@ -109,4 +115,4 @@ python -m ipykernel install --user --name=spagft_env --display-name=spagft_env
 
 ## Usage and Tutorials
 
-The tutorial of ```SpaGFT``` could be found [here](https://spagft.readthedocs.io/en/latest/).
+The tutorial of ```SpaGFT``` can be found [here](https://spagft.readthedocs.io/en/latest/).

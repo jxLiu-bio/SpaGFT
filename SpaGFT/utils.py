@@ -21,27 +21,26 @@ def get_laplacian_mtx(adata,
     Parameters
     ----------
     adata : AnnData
-        adata.X is the normalized count matrix. Besides, the spatial coordinat-
-        es could be found in adata.obs or adata.obsm.
+        adata.X is the normalized count matrix. Besides, the spatial coordinates could be found in adata.obs
+        or adata.obsm.
     num_neighbors: int, optional
-        The number of neighbors for each node/spot/pixel when contrcut graph. 
-        The defalut if 6.
+        The number of neighbors for each node/spot/pixel when construct graph.
+        The default if 6.
     spatial_key=None : list | string
-        Get the coordinate information by adata.obsm[spaital_key] or 
-        adata.var[spatial_key]. The default is ['array_row', 'array_col'].
+        Get the coordinate information by adata.obsm[spaital_key] or adata.var[spatial_key].
+        The default is ['array_row', 'array_col'].
     normalization : bool, optional
-        Whether need to normalize laplacian matrix. The default is False.
+        Whether you need to normalize laplacian matrix. The default is False.
 
     Raises
     ------
     KeyError
-        The coordinates should be found at adata.obs[spatial_names] or 
-        adata.obsm[spatial_key]
+        The coordinates should be found at adata.obs[spatial_names] or adata.obsm[spatial_key]
 
     Returns
     -------
     lap_mtx : csr_matrix
-        The laplcaian matrix or mormalized laplcian matrix.
+        The Laplacian matrix or normalized Laplacian matrix.
 
     """
     if spatial_key in adata.obsm_keys():
@@ -51,15 +50,14 @@ def get_laplacian_mtx(adata,
         adj_mtx = kneighbors_graph(adata.obs[spatial_key],
                                    n_neighbors=num_neighbors)
     else:
-        raise KeyError("%s is not avaliable in adata.obsm_keys" % \
-                       spatial_key + " or adata.obs_keys")
+        raise KeyError("%s is not available in adata.obsm_keys" % spatial_key + " or adata.obs_keys")
 
     adj_mtx = nx.adjacency_matrix(nx.Graph(adj_mtx))
     # Degree matrix
     deg_mtx = adj_mtx.sum(axis=1)
     deg_mtx = create_degree_mtx(deg_mtx)
     # Laplacian matrix
-    # Whether need to normalize laplcian matrix
+    # Whether you need to normalize Laplacian matrix
     if not normalization:
         lap_mtx = deg_mtx - adj_mtx
     else:
@@ -70,42 +68,8 @@ def get_laplacian_mtx(adata,
     return lap_mtx
 
 
-def find_HVGs(adata, norm_method=None, num_genes=2000):
-    """
-    Find spatialy variable genes.
-
-    Parameters
-    ----------
-    adata : AnnData
-        The object to save sequencing data.
-    norm_method : str | None, optional
-        The method used to normalized adata. The default is None.
-    num_genes : None | int, optional
-        The number of highly variable genes. The default is 2000.
-
-    Returns
-    -------
-    HVG_list : list
-        Highly variable genes.
-
-    """
-    # Normalization
-    if norm_method == "CPM":
-        sc.pp.normalize_total(adata, target_sum=1e5)
-        # log-transform
-        sc.pp.log1p(adata)
-    else:
-        pass
-    # Find high variable genes using sc.pp.highly_variable_genes() with default 
-    # parameters
-    sc.pp.highly_variable_genes(adata, n_top_genes=num_genes)
-    HVG_list = adata.var.index[adata.var.highly_variable]
-    HVG_list = list(HVG_list)
-
-    return HVG_list
-
-
-def create_adjacent_mtx(coor_df, spatial_names=['array_row', 'array_col'],
+def create_adjacent_mtx(coor_df,
+                        spatial_names=['array_row', 'array_col'],
                         num_neighbors=4):
     # Transform coordinate dataframe to coordinate array
     coor_array = coor_df.loc[:, spatial_names].values
@@ -148,7 +112,7 @@ def create_degree_mtx(diag):
 
 
 def gene_clustering_kMeans(frequency_array, n_clusters, reduction=50):
-    # Normlization
+    # Normalization
     frequency_array = preprocessing.StandardScaler().fit_transform(frequency_array)
 
     # Dimension reduction
@@ -162,7 +126,8 @@ def gene_clustering_kMeans(frequency_array, n_clusters, reduction=50):
     return kmeans_model.labels_
 
 
-def window_side_bin(adata, shape=(20, 20),
+def window_side_bin(adata,
+                    shape=(20, 20),
                     spatial_names=['array_row', 'array_col'],
                     sparse=True):
     # Extract border
@@ -193,15 +158,11 @@ def window_side_bin(adata, shape=(20, 20),
             tmp_index = tmp_index[tmp_index.iloc[:, 1] == j]
             if tmp_index.shape[0] > 0:
                 tmp_index = tmp_index.index
-                count_mtx.loc["pseudo_" + str(i) + "_" + str(j),
-                :] = adata[tmp_index, :].X.sum(axis=0)
-                final_coor_df.loc["pseudo_" + str(i) + "_" + str(j),
-                :] = [i, j]
+                count_mtx.loc["pseudo_" + str(i) + "_" + str(j), :] = adata[tmp_index, :].X.sum(axis=0)
+                final_coor_df.loc["pseudo_" + str(i) + "_" + str(j), :] = [i, j]
             else:
-                count_mtx.loc["pseudo_" + str(i) + "_" + str(j),
-                :] = 0
-                final_coor_df.loc["pseudo_" + str(i) + "_" + str(j),
-                :] = [i, j]
+                count_mtx.loc["pseudo_" + str(i) + "_" + str(j), :] = 0
+                final_coor_df.loc["pseudo_" + str(i) + "_" + str(j), :] = [i, j]
 
     # Transform it to anndata
     from anndata import AnnData
@@ -223,7 +184,7 @@ def select_svg_normal(gene_score, num_sigma=1):
     sigma = np.std(gene_score['gft_score'])
     gene_score['spatially_variable'] = 0
     gene_score.loc[gene_score['gft_score'] > mu + num_sigma * sigma,
-                   'spatially_variable'] = 1
+    'spatially_variable'] = 1
 
     return gene_score
 
@@ -338,7 +299,7 @@ def kneed_select_values(value_list, S=3, increasing=True):
 def correct_pvalues_for_multiple_testing(pvalues,
                                          correction_type="Benjamini-Hochberg"):
     """
-    Correct pvalues to obtain the adjusted pvalues 
+    Correct p-values to obtain the adjusted p-values
 
     Parameters
     ----------
@@ -383,7 +344,7 @@ def correct_pvalues_for_multiple_testing(pvalues,
     return new_pvalues
 
 
-def permutation_signal(signal_array, num_permutaion=1000):
+def permutation_signal(signal_array, num_permutation=1000):
     """
     Permutate gene signals in spatial domain randomly.
 
@@ -391,20 +352,20 @@ def permutation_signal(signal_array, num_permutaion=1000):
     ----------
     signal_array : list | array
         A one-dimensional array indicate gene expression on all spots.
-    num_permutaion : int, optional
+    num_permutation : int, optional
         The number of permutation. The default is 1000.
 
     Returns
     -------
     total_signals : array
-        The permutaed gene expression signals.
+        The permuted gene expression signals.
 
     """
     signal_array = np.array(signal_array)
-    total_signals = signal_array * np.ones((num_permutaion,
+    total_signals = signal_array * np.ones((num_permutation,
                                             len(signal_array)))
 
-    for i in range(num_permutaion):
+    for i in range(num_permutation):
         total_signals[i, :] = np.random.permutation(total_signals[i, :])
 
     return total_signals
@@ -424,21 +385,19 @@ def significant_test_permutation(exp_mtx,
     Parameters
     ----------
     exp_mtx : 2D-array
-        The count matrix of gene expresssion. (spots * genes)
+        The count matrix of gene expressions. (spots * genes)
     gene_score : 1D-array
         The calculated gene scores. 
     eigvals : array
         The eigenvalues of Laplacian matrix.
     eigvecs_T : array
         The eigenvectors of Laplacian matrix.
-    num_permutaion : int, optional
+    num_permutation : int, optional
         The number of permutations. The default is 1000.
     num_pool : int, optional
-        The cores used for umltiprocess calculation to accelerate speed. The 
-        default is 200.
+        The cores used for multiprocess calculation to accelerate speed. The default is 200.
     spec_norm : str, optional
-        The method to normalize graph signals in spectral domain. The default 
-        is 'l1'.
+        The method to normalize graph signals in spectral domain. The default  is 'l1'.
 
     Returns
     -------
@@ -452,8 +411,7 @@ def significant_test_permutation(exp_mtx,
     def _test_by_permutaion(gene_index):
         (gene_index)
         graph_signal = exp_mtx[gene_index, :]
-        total_signals = permutation_signal(signal_array=graph_signal,
-                                           num_permutaion=num_permutaion)
+        total_signals = permutation_signal(signal_array=graph_signal, num_permutation=num_permutaion)
         frequency_array = np.matmul(eigvecs_T, total_signals.transpose())
         frequency_array = np.abs(frequency_array)
         if spec_norm != None:
@@ -473,12 +431,12 @@ def significant_test_permutation(exp_mtx,
 
     return res
 
+
 def test_significant_freq(freq_array,
                           cutoff,
                           num_pool=200):
     """
-    Significance test by camparing the intensities in low frequency FMs and 
-    in high frequency FMs. 
+    Significance test by comparing the intensities in low frequency FMs and in high frequency FMs.
 
     Parameters
     ----------
@@ -487,7 +445,7 @@ def test_significant_freq(freq_array,
     cutoff : int
         Watershed between low frequency signals and high frequency signals.
     num_pool : int, optional
-        The cores used for umltiprocess calculation to accelerate speed. The 
+        The cores used for multiprocess calculation to accelerate speed. The
         default is 200.
 
     Returns
@@ -523,13 +481,14 @@ def test_significant_freq(freq_array,
 
     return res
 
-def my_eigsh(args_tupple):
+
+def my_eigsh(args_tuple):
     """
     The function is used to multi-process calculate using Pool.
 
     Parameters
     ----------
-    args_tupple : tupple 
+    args_tuple : tupple
         The args_tupple contains three elements, that are, Lplacian matrix, k 
         and which.
 
@@ -538,9 +497,9 @@ def my_eigsh(args_tupple):
     (eigvals, eigvecs)
 
     """
-    lap_mtx = args_tupple[0]
-    k = args_tupple[1]
-    which = args_tupple[2]
+    lap_mtx = args_tuple[0]
+    k = args_tuple[1]
+    which = args_tuple[2]
     eigvals, eigvecs = ss.linalg.eigsh(lap_mtx.astype(float),
                                        k=k,
                                        which=which)
@@ -548,12 +507,8 @@ def my_eigsh(args_tupple):
 
 
 def get_cos_similar(v1: list, v2: list):
-    # num = float(np.dot(v1, v2))  # dot product between two vextors
-    # denom = np.linalg.norm(v1) * np.linalg.norm(v2)  
-    # return (num / denom) if denom != 0 else 0
     v3 = np.array(v1) + np.array(v2)
     return v3[v3 >= 2].size
-    pass
 
 
 def get_overlap_cs_core(cluster_collection):
@@ -567,4 +522,4 @@ def get_overlap_cs_core(cluster_collection):
                 over_loop_cs_score += get_cos_similar(value, v1)
                 over_loop_cs_score_num += 1
     return (over_loop_cs_score / over_loop_cs_score_num / spot_shape) \
-           if over_loop_cs_score_num != 0 else 1
+        if over_loop_cs_score_num != 0 else 1
