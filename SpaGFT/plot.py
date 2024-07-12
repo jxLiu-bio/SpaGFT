@@ -375,7 +375,7 @@ def _umap_svg_cluster(adata,
                       return_plot=True):
     if svg_list == None:
         ftup_df = adata.var.copy()
-        svg_list = ftup_df[ftup_df.cutoff_gft_score][ftup_df.qvalue < 0.05].index
+        svg_list = ftup_df[ftup_df.cutoff_gft_score][ftup_df.fdr < 0.05].index
     plot_df = adata.uns['gft_umap_ftu']
     plot_df = pd.DataFrame(plot_df)
     plot_df.index = adata.var_names
@@ -466,7 +466,7 @@ def umap_svg(adata,
     plot_df['gene'] = 'Non-svg'
     if svg_list == None:
         ftup_df = adata.var.copy()
-        svg_list = ftup_df[ftup_df.cutoff_gft_score][ftup_df.qvalue < 0.05].index
+        svg_list = ftup_df[ftup_df.cutoff_gft_score][ftup_df.fdr < 0.05].index
     plot_df.loc[svg_list, 'gene'] = 'svg'
     plot_df['gene'] = pd.Categorical(plot_df['gene'],
                                      categories=['svg', 'Non-svg'],

@@ -400,7 +400,7 @@ def detect_svg(adata,
         from statsmodels.stats.multitest import multipletests
         qval_list = multipletests(np.array(pval_list), method='fdr_by')[1]
         adata.var['pvalue'] = pval_list
-        adata.var['qvalue'] = qval_list
+        adata.var['fdr'] = qval_list
         score_df = adata.var.loc[score_df.index, :].copy()
 
     return score_df
@@ -677,7 +677,7 @@ def identify_ftu(adata,
         if svg_list == 'infer':
             gene_score = adata.var.sort_values(by='svg_rank')
             adata = adata[:, gene_score.index]
-            svg_list = adata.var[adata.var.cutoff_gft_score][adata.var.qvalue < 0.05].index.tolist()
+            svg_list = adata.var[adata.var.cutoff_gft_score][adata.var.fdr < 0.05].index.tolist()
     ftup_adata = adata[:, svg_list].copy()
     if 'log1p' in adata.uns_keys():
         ftup_adata.uns.pop('log1p')
