@@ -14,7 +14,7 @@ from pathlib import Path
 from anndata import AnnData
 from pandas import DataFrame
 
-spg_version = "SpaGFT 0.1.2"
+spg_version = "SpaGFT 0.1.3"
 sc.settings.verbosity = 1
 sc.settings.set_figure_params(dpi_save=600, facecolor="white")
 
@@ -156,11 +156,11 @@ def identify_svo_list(
     svo_list = None
     if omics_type == OmicsType.GENE:
         svo_list = score_df[score_df.cutoff_gft_score][
-            score_df.qvalue < 0.05
+            score_df.fdr < 0.05
         ].index.to_list()
     elif omics_type == OmicsType.PROTEIN:
-        # for non-whole-transcriptomics datasets, use qvalue as cutoff to obtain spatial variable features
-        svo_list = score_df[score_df.qvalue < 0.05].index.to_list()
+        # for non-whole-transcriptomics datasets, use fdr as cutoff to obtain spatial variable features
+        svo_list = score_df[score_df.fdr < 0.05].index.to_list()
     else:
         raise NotImplementedError()
     print(f"The number of SVOs: {len(svo_list)}")
