@@ -2,6 +2,7 @@
 
 In this case, we will show the applications of SpaGFT into machine learning model improvement.
 ### Outline
+
 1. SpaGCN Improvement
 <br />
 <br />
