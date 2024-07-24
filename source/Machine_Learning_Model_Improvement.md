@@ -4,10 +4,10 @@ In this case, we will show the applications of SpaGFT into machine learning mode
 
 ### Outline
 
-1. SpaGCN Improvement
-2. TACCO Improvement
-3. Tangram Improvement
-4. CAMPA Improvement
+1. SpaGCN Improvement  
+2. TACCO Improvement  
+3. Tangram Improvement  
+4. CAMPA Improvement  
 
 These implementations demonstrate the integration of SpaGFT into existing computational methods, enhancing their performance in their focusing, like analyzing spatial transcriptomics and subcellular organelle data. Each section of this guide focuses on a different framework, outlining the specific steps and methodologies employed to integrate SpaGFT. The guide is structured as follows:
 
