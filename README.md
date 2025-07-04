@@ -94,7 +94,7 @@ Before installing ```SpaGFT``` formally, the dependency packages should be insta
 Users can install all dependencies by:
 
 ```bash
-git clone https://github.com/OSU-BMBL/SpaGFT
+git clone https://github.com/jxLiu-bio/SpaGFT.git
 cd SpaGFT
 pip install -r requirements.txt
 ```
